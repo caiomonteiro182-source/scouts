@@ -105,24 +105,27 @@ CUSTOM_CSS = """
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
 
-    /* Estilização de Abas */
+    /* Estilização de Abas Ajustada */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
+        gap: 12px;
         background-color: #0F172A;
-        padding: 8px;
-        border-radius: 10px;
+        padding: 8px 12px;
+        border-radius: 12px;
     }
 
     .stTabs [data-baseweb="tab"] {
-        height: 45px;
+        height: auto;
+        padding: 10px 20px !important;
         border-radius: 8px;
         color: #94A3B8;
         font-weight: 700;
+        transition: all 0.2s ease;
     }
 
     .stTabs [aria-selected="true"] {
         background-color: #C8102E !important;
         color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(200, 16, 46, 0.4);
     }
 
     /* Botão Vermelho Oficial FCB */
@@ -155,7 +158,6 @@ CSV_URL = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=csv&g
 
 @st.cache_data(ttl=0)
 def load_data():
-    # header=3 pula o título inicial e lê diretamente o cabeçalho das colunas
     df = pd.read_csv(CSV_URL, header=3)
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
@@ -170,7 +172,6 @@ def load_data():
 
     return df
 
-# Helper para converter imagem da logo em Base64
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
@@ -219,7 +220,6 @@ with st.sidebar:
 try:
     df = load_data()
 
-    # Filtro por time e busca de jogador
     if "Time" in df.columns:
         times_unicos = ["Todos"] + sorted(list(df["Time"].dropna().unique()))
         filtro_time = st.sidebar.selectbox("Colete / Time:", times_unicos)
@@ -236,7 +236,6 @@ try:
 
     df_filtrado = df_filtrado.sort_values(by=["Gols", "Assistências", "Participações em Gols"], ascending=False)
 
-    # Destaques Rápidos
     artilheiro = df.sort_values(by="Gols", ascending=False).iloc[0] if not df.empty else None
     garcom = df.sort_values(by="Assistências", ascending=False).iloc[0] if not df.empty else None
     lider_participacoes = df.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df.empty else None
