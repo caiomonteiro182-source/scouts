@@ -27,12 +27,10 @@ CUSTOM_CSS = """
         font-family: 'Montserrat', sans-serif;
     }
 
-    /* Oculta a barra lateral do Streamlit */
     [data-testid="stSidebar"], [data-testid="collapsedControl"] {
         display: none !important;
     }
 
-    /* Fundo Escuro Esportivo */
     .stApp {
         background-color: #070D18;
         color: #F1F5F9;
@@ -72,7 +70,7 @@ CUSTOM_CSS = """
         letter-spacing: 1.5px;
     }
 
-    /* Cards Informativos (Próximo Jogo e Placar) */
+    /* Cards Informativos Topo */
     .info-card {
         background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
         border: 1px solid #334155;
@@ -139,7 +137,7 @@ CUSTOM_CSS = """
     }
 
     .team-score {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 900;
     }
     .score-red { color: #EF4444; }
@@ -266,19 +264,26 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. CARREGAMENTO DOS DADOS E CLIMA
+# 3. CARREGAMENTO DAS DUDAS PLANILHAS E CLIMA
 # ==========================================
-FILE_ID = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
-GID = "1092123094"
-CSV_URL = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=csv&gid={GID}"
+# 1. Planilha de Gols e Assistências
+ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
+GID_STATS = "1092123094"
+URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv&gid={GID_STATS}"
+
+# 2. Planilha de Vitórias dos Times
+ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
+GID_VITORIAS = "1092123094"
+URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv&gid={GID_VITORIAS}"
 
 @st.cache_data(ttl=0)
-def load_data():
-    df = pd.read_csv(CSV_URL, header=3)
+def load_player_stats():
+    """Carrega as estatísticas dos jogadores (Gols, Assistências)."""
+    df = pd.read_csv(URL_STATS, header=3)
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
     
-    colunas_numericas = ["Gols", "Assistências", "Gols Contra", "Participações em Gols", "Vitórias"]
+    colunas_numericas = ["Gols", "Assistências", "Gols Contra", "Participações em Gols"]
     for col in colunas_numericas:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
@@ -287,6 +292,17 @@ def load_data():
         df["Participações em Gols"] = df["Gols"] + df["Assistências"]
 
     return df
+
+@st.cache_data(ttl=0)
+def load_victories_stats():
+    """Carrega o placar de vitórias por time."""
+    try:
+        df_vic = pd.read_csv(URL_VITORIAS)
+        df_vic.columns = df_vic.columns.str.strip()
+        return df_vic
+    except Exception:
+        # Tenta sem parâmetros extras caso a estrutura seja direta
+        return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv")
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
@@ -365,19 +381,30 @@ st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 # ==========================================
 # 5. CARDS SUPERIORES (PRÓXIMO JOGO & PLACAR DE VITÓRIAS)
 # ==========================================
-df = load_data()
+df_players = load_player_stats()
+df_vitorias = load_victories_stats()
 
-# Leitura do Placar de Vitórias por Time
+# Processamento do Placar de Vitórias a partir da Planilha Dedicada
 vitorias_vermelho = 0
 vitorias_azul = 0
 
-if "Time" in df.columns:
-    if "Vitórias" in df.columns:
-        vitorias_vermelho = df[df["Time"] == "Vermelho"]["Vitórias"].sum()
-        vitorias_azul = df[df["Time"] == "Azul"]["Vitórias"].sum()
-    elif "Vitória" in df.columns:
-        vitorias_vermelho = df[df["Time"] == "Vermelho"]["Vitória"].sum()
-        vitorias_azul = df[df["Time"] == "Azul"]["Vitória"].sum()
+try:
+    cols_v = [c.lower() for c in df_vitorias.columns]
+    
+    # Busca dinamicamente os totais de vitórias de cada time na planilha
+    for idx, row in df_vitorias.iterrows():
+        row_str = str(row.values).lower()
+        if "vermelho" in row_str:
+            # Procura o primeiro valor numérico presente na linha
+            nums = [int(val) for val in row if str(val).isdigit()]
+            if nums:
+                vitorias_vermelho = nums[0]
+        elif "azul" in row_str:
+            nums = [int(val) for val in row if str(val).isdigit()]
+            if nums:
+                vitorias_azul = nums[0]
+except Exception:
+    pass
 
 weather_info = get_next_saturday_weather()
 
@@ -424,14 +451,14 @@ with col_placar:
 # 6. CARDS DE DESTAQUES RÁPIDOS
 # ==========================================
 try:
-    artilheiro = df.sort_values(by="Gols", ascending=False).iloc[0] if not df.empty else None
-    garcom = df.sort_values(by="Assistências", ascending=False).iloc[0] if not df.empty else None
-    lider_participacoes = df.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df.empty else None
+    artilheiro = df_players.sort_values(by="Gols", ascending=False).iloc[0] if not df_players.empty else None
+    garcom = df_players.sort_values(by="Assistências", ascending=False).iloc[0] if not df_players.empty else None
+    lider_participacoes = df_players.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df_players.empty else None
 
     c1, c2, c3, c4 = st.columns(4)
 
     with c1:
-        total_g = df["Gols"].sum()
+        total_g = df_players["Gols"].sum()
         card_total = (
             f'<div class="metric-card">'
             f'<div class="metric-title">⚽ TOTAL DE GOLS</div>'
@@ -495,8 +522,8 @@ try:
         col_filtro1, col_filtro2 = st.columns([1, 2])
         
         with col_filtro1:
-            if "Time" in df.columns:
-                times_unicos = ["Todos os Times"] + sorted(list(df["Time"].dropna().unique()))
+            if "Time" in df_players.columns:
+                times_unicos = ["Todos os Times"] + sorted(list(df_players["Time"].dropna().unique()))
                 filtro_time = st.selectbox("Filtrar por Time:", times_unicos)
             else:
                 filtro_time = "Todos os Times"
@@ -504,7 +531,7 @@ try:
         with col_filtro2:
             busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
 
-        df_filtrado = df.copy()
+        df_filtrado = df_players.copy()
         if filtro_time != "Todos os Times":
             df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
         if busca_jogador:
@@ -573,8 +600,8 @@ try:
 
     elif opcao_aba == "⚔️ Duelo de Times":
         st.subheader("⚔️ Comparativo: Time Vermelho vs Time Azul")
-        if "Time" in df.columns:
-            stats_times = df.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
+        if "Time" in df_players.columns:
+            stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
             
             col_vermelho, col_azul = st.columns(2)
             
@@ -610,7 +637,7 @@ try:
 
     elif opcao_aba == "🏅 Top 3 Artilharia":
         st.subheader("🏅 Pódio da Artilharia")
-        top3_gols = df.sort_values(by="Gols", ascending=False).head(3)
+        top3_gols = df_players.sort_values(by="Gols", ascending=False).head(3)
         
         cols_podio = st.columns(3)
         podio_icons = ["🥇 1º Lugar", "🥈 2º Lugar", "🥉 3º Lugar"]
@@ -629,4 +656,4 @@ try:
                 st.markdown(card_podio, unsafe_allow_html=True)
 
 except Exception as e:
-    st.error(f"Erro ao carregar dados da planilha: {e}")
+    st.error(f"Erro ao carregar dados das planilhas: {e}")
