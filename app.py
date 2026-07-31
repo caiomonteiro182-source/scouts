@@ -36,7 +36,7 @@ CUSTOM_CSS = """
         color: #F1F5F9;
     }
 
-    /* Ticker Deslizante do Brasileirão (Estilo ESPN/Premiere) */
+    /* Ticker Deslizante do Brasileirão */
     .ticker-wrap {
         width: 100%;
         background: linear-gradient(90deg, #0A1329 0%, #0F172A 50%, #0A1329 100%);
@@ -88,7 +88,7 @@ CUSTOM_CSS = """
         text-align: center !important;
     }
 
-    /* Banner do Cabeçalho Oficial (Computador) */
+    /* Banner do Cabeçalho Oficial */
     .header-container {
         background: linear-gradient(135deg, #0B1B3D 0%, #152844 60%, #C8102E 100%);
         padding: 25px 40px;
@@ -122,7 +122,7 @@ CUSTOM_CSS = """
         letter-spacing: 1.5px;
     }
 
-    /* AJUSTES RESPONSIVOS PARA CELULARES (MOBILE) */
+    /* Ajustes Mobile */
     @media (max-width: 768px) {
         .header-container {
             flex-direction: column !important;
@@ -350,7 +350,6 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 # ==========================================
 @st.cache_data(ttl=1800)
 def get_brasileirao_results():
-    """Retorna os resultados oficiais da rodada atual do Brasileirão."""
     try:
         res = requests.get("https://api.cartolafc.globo.com/partidas", timeout=5).json()
         partidas = res.get("partidas", [])
@@ -399,17 +398,25 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS DUAS PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS TÊS PLANILHAS E CLIMA
 # ==========================================
+# 1. Planilha de Gols e Assistências
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
 
+# 2. Planilha de Vitórias dos Times
 ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
 GID_VITORIAS = "1092123094"
 URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv&gid={GID_VITORIAS}"
 
+# 3. Planilha de Resultados dos Útimos Jogos FCB
+ID_PLANILHA_JOGOS = "1Chjvd4vBarn9O4EgXWFnyMe5uIBgUsa4QCHIRr8C6Tk"
+GID_JOGOS = "1092123094"
+URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv&gid={GID_JOGOS}"
+
 @st.cache_data(ttl=0)
 def load_player_stats():
+    """Planilha 1: Estatísticas dos jogadores."""
     df = pd.read_csv(URL_STATS, header=3)
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
@@ -426,12 +433,24 @@ def load_player_stats():
 
 @st.cache_data(ttl=0)
 def load_victories_stats():
+    """Planilha 2: Placar geral de vitórias."""
     try:
         df_vic = pd.read_csv(URL_VITORIAS)
         df_vic.columns = df_vic.columns.str.strip()
         return df_vic
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv")
+
+@st.cache_data(ttl=0)
+def load_match_history():
+    """Planilha 3: Histórico e resultados dos últimos jogos FCB."""
+    try:
+        df_jogos = pd.read_csv(URL_JOGOS)
+        df_jogos = df_jogos.dropna(how='all')
+        df_jogos.columns = df_jogos.columns.str.strip()
+        return df_jogos
+    except Exception:
+        return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
@@ -626,11 +645,17 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ==========================================
-    # 8. NAVEGAÇÃO POR PÍLULAS
+    # 8. NAVEGAÇÃO POR PÍLULAS (INCLUI NOVA ABA DOS ÚLTIMOS JOGOS)
     # ==========================================
     opcao_aba = st.radio(
         label="",
-        options=["🏆 Classificação Geral", "👥 Elenco dos Times", "⚔️ Duelo de Times", "🏅 Top 3 Artilharia"],
+        options=[
+            "🏆 Classificação Geral",
+            "📅 Últimos Jogos FCB",
+            "👥 Elenco dos Times",
+            "⚔️ Duelo de Times",
+            "🏅 Top 3 Artilharia"
+        ],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -673,6 +698,20 @@ try:
                 "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d", alignment="center"),
                 "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
             }
+        )
+
+    elif opcao_aba == "📅 Últimos Jogos FCB":
+        st.subheader("📅 Resultados dos Últimos Encontros")
+        df_historico_jogos = load_match_history()
+
+        # Configuração de alinhamento para todas as colunas da 3ª planilha
+        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
+
+        st.dataframe(
+            df_historico_jogos,
+            use_container_width=True,
+            hide_index=True,
+            column_config=configs_colunas
         )
 
     elif opcao_aba == "👥 Elenco dos Times":
