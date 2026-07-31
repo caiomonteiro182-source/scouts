@@ -638,6 +638,8 @@ timer_html = (
     f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{horas:02d}h</span></div>'
     f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
     f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{minutos:02d}m</span></div>'
+    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
+    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{segundos:02d}s</span></div>'
     f'</div>'
 )
 
