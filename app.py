@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import os
 import base64
+import requests
+from datetime import datetime, timedelta
 
 # ==========================================
 # 1. CONFIGURAÇÃO DA PÁGINA
@@ -48,7 +50,7 @@ CUSTOM_CSS = """
         align-items: center;
         justify-content: center;
         gap: 35px;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
         border-left: 6px solid #C8102E;
         text-align: left;
     }
@@ -70,6 +72,50 @@ CUSTOM_CSS = """
         margin: 8px 0 0 0;
         text-transform: uppercase;
         letter-spacing: 1.5px;
+    }
+
+    /* Card do Próximo Jogo & Clima */
+    .match-info-card {
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+        border: 1px solid #334155;
+        border-left: 5px solid #38BDF8;
+        border-radius: 12px;
+        padding: 15px 25px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .match-info-title {
+        color: #38BDF8;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .match-info-detail {
+        color: #FFFFFF;
+        font-size: 15px;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+
+    .weather-pill {
+        background-color: #0F2144;
+        border: 1px solid #1E3A8A;
+        border-radius: 20px;
+        padding: 6px 16px;
+        color: #F1F5F9;
+        font-size: 14px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
 
     /* Cards de Métricas e Destaques */
@@ -212,7 +258,7 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. CARREGAMENTO DOS DADOS (GOOGLE SHEETS)
+# 3. CARREGAMENTO DOS DADOS E CLIMA
 # ==========================================
 FILE_ID = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 GID = "1092123094"
@@ -234,13 +280,66 @@ def load_data():
 
     return df
 
+@st.cache_data(ttl=3600)
+def get_next_saturday_weather():
+    """Busca o clima de Cambé - PR para o próximo sábado às 16:00."""
+    try:
+        today = datetime.now()
+        # Calcula os dias até o próximo sábado (5 representa o sábado)
+        days_until_saturday = (5 - today.weekday()) % 7
+        if days_until_saturday == 0 and today.hour >= 18:
+            days_until_saturday = 7
+        
+        next_saturday = today + timedelta(days=days_until_saturday)
+        date_str = next_saturday.strftime("%d/%m")
+
+        # Coordenadas de Cambé - PR
+        lat, lon = -23.2758, -51.2783
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,precipitation_probability,weather_code&timezone=America%2FSao_Paulo"
+        
+        res = requests.get(url, timeout=5).json()
+        hourly = res.get("hourly", {})
+        times = hourly.get("time", [])
+
+        target_time_str = next_saturday.strftime("%Y-%m-%dT16:00")
+        
+        if target_time_str in times:
+            idx = times.index(target_time_str)
+            temp = hourly["temperature_2m"][idx]
+            pop = hourly["precipitation_probability"][idx]
+            wcode = hourly["weather_code"][idx]
+
+            # Ícones de clima simples por código
+            if wcode == 0:
+                icon = "☀️ Céu Limpo"
+            elif wcode in [1, 2, 3]:
+                icon = "Partly Cloudy" if wcode == 2 else ("⛅ Parcialmente Nublado" if wcode == 1 else "☁️ Nublado")
+            elif wcode in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
+                icon = "🌧️ Chuva"
+            elif wcode in [95, 96, 99]:
+                icon = "⛈️ Tempestade"
+            else:
+                icon = "🌤️ Tempo Bom"
+
+            return {
+                "data": date_str,
+                "temp": f"{int(round(temp))}°C",
+                "pop": f"{pop}%",
+                "condicao": icon,
+                "status": True
+            }
+        else:
+            return {"data": date_str, "status": False}
+    except Exception:
+        return {"data": "", "status": False}
+
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
 
 # ==========================================
-# 4. CABEÇALHO OFICIAL (COM LOGO MAIOR E CONTEÚDO CENTRALIZADO)
+# 4. CABEÇALHO OFICIAL
 # ==========================================
 try:
     logo_base64 = get_base64_of_bin_file("logo.png")
@@ -261,7 +360,35 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 5. CONTEÚDO PRINCIPAL
+# 5. CARD DE PRÓXIMA PARTIDA E CLIMA
+# ==========================================
+weather_info = get_next_saturday_weather()
+
+if weather_info["status"]:
+    weather_html = f"""
+        <div class="weather-pill">
+            <span>{weather_info['condicao']}</span> • 
+            <span>🌡️ {weather_info['temp']}</span> • 
+            <span>🌧️ Chance de Chuva: <b>{weather_info['pop']}</b></span>
+        </div>
+    """
+else:
+    weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
+
+st.markdown(f"""
+    <div class="match-info-card">
+        <div>
+            <div class="match-info-title">📍 PRÓXIMO CONCONTRO</div>
+            <div class="match-info-detail">Sábado ({weather_info.get('data', 'Semana')}) às 16:00 • Cambé - PR</div>
+        </div>
+        <div>
+            {weather_html}
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 6. CONTEÚDO PRINCIPAL
 # ==========================================
 try:
     df = load_data()
@@ -316,7 +443,7 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ==========================================
-    # 6. NAVEGAÇÃO POR PÍLULAS/CÍRCULOS
+    # 7. NAVEGAÇÃO POR PÍLULAS/CÍRCULOS
     # ==========================================
     opcao_aba = st.radio(
         label="",
