@@ -398,7 +398,7 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS TÊS PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS TRÊS PLANILHAS E CLIMA
 # ==========================================
 # 1. Planilha de Gols e Assistências
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
@@ -645,13 +645,13 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ==========================================
-    # 8. NAVEGAÇÃO POR PÍLULAS (INCLUI NOVA ABA DOS ÚLTIMOS JOGOS)
+    # 8. NAVEGAÇÃO POR PÍLULAS (ÚLTIMOS JOGOS À ESQUERDA)
     # ==========================================
     opcao_aba = st.radio(
         label="",
         options=[
-            "🏆 Classificação Geral",
             "📅 Últimos Jogos FCB",
+            "🏆 Classificação Geral",
             "👥 Elenco dos Times",
             "⚔️ Duelo de Times",
             "🏅 Top 3 Artilharia"
@@ -663,11 +663,10 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # CONTEÚDO DE CADA ABA
-    elif opcao_aba == "📅 Últimos Jogos FCB":
+    if opcao_aba == "📅 Últimos Jogos FCB":
         st.subheader("📅 Resultados dos Últimos Encontros")
         df_historico_jogos = load_match_history()
 
-        # Configuração de alinhamento para todas as colunas da 3ª planilha
         configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
 
         st.dataframe(
@@ -676,8 +675,8 @@ try:
             hide_index=True,
             column_config=configs_colunas
         )
-    
-    if opcao_aba == "🏆 Classificação Geral":
+
+    elif opcao_aba == "🏆 Classificação Geral":
         st.subheader("📋 Tabela Completa de Desempenho")
         
         col_filtro1, col_filtro2 = st.columns([1, 2])
@@ -713,8 +712,6 @@ try:
                 "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
             }
         )
-
-    
 
     elif opcao_aba == "👥 Elenco dos Times":
         st.subheader("👥 Elenco Oficial dos Times")
