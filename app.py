@@ -584,7 +584,7 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS SUPERIORES COM TEMPORIZADOR NATIVO E SEGURO
+# 6. CARDS SUPERIORES COM TEMPORIZADOR LIMPO
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
@@ -616,7 +616,7 @@ if weather_info["status"]:
 else:
     weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
 
-# CÁLCULO SEGURO E NATIVO DO TEMPORIZADOR (VIA PYTHON)
+# CÁLCULO NATIVO DO TEMPORIZADOR (PYTHON)
 agora = datetime.now()
 dias_ate_sabado = (5 - agora.weekday()) % 7
 if dias_ate_sabado == 0 and agora.hour >= 16:
@@ -629,20 +629,17 @@ dias = tempo_restante.days
 horas, rem = divmod(tempo_restante.seconds, 3600)
 minutos, segundos = divmod(rem, 60)
 
-timer_html = f"""
-<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center;">
-    <span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>
-    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-        <span style="font-size: 13px; font-weight: 900; color: #FFF;">{dias:02d}d</span>
-    </div>
-    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-        <span style="font-size: 13px; font-weight: 900; color: #FFF;">{horas:02d}h</span>
-    </div>
-    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-        <span style="font-size: 13px; font-weight: 900; color: #FFF;">{minutos:02d}m</span>
-    </div>
-</div>
-"""
+timer_html = (
+    f'<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center;">'
+    f'<span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>'
+    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
+    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{dias:02d}d</span></div>'
+    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
+    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{horas:02d}h</span></div>'
+    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
+    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{minutos:02d}m</span></div>'
+    f'</div>'
+)
 
 data_jogo = weather_info.get('data', '')
 data_str = f" ({data_jogo})" if data_jogo else ""
@@ -650,14 +647,14 @@ data_str = f" ({data_jogo})" if data_jogo else ""
 col_jogo, col_placar = st.columns(2)
 
 with col_jogo:
-    card_jogo_html = f"""
-    <div class="info-card card-border-blue">
-        <div class="card-tag">📍 PRÓXIMO ENCONTRO</div>
-        <div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>
-        <div>{weather_html}</div>
-        {timer_html}
-    </div>
-    """
+    card_jogo_html = (
+        f'<div class="info-card card-border-blue">'
+        f'<div class="card-tag">📍 PRÓXIMO ENCONTRO</div>'
+        f'<div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>'
+        f'<div>{weather_html}</div>'
+        f'{timer_html}'
+        f'</div>'
+    )
     st.markdown(card_jogo_html, unsafe_allow_html=True)
 
 with col_placar:
