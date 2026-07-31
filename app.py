@@ -5,7 +5,7 @@ st.set_page_config(page_title="Rachão Castelo Branco", page_icon="⚽", layout=
 st.title("⚽ Rachão Castelo Branco - 2026")
 
 # Cole o ID da PLANILHA DO GOOGLE criada no passo 5
-FILE_ID = "1092123094"
+FILE_ID = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 
 # Link para exportação direta em CSV
 CSV_URL = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=csv"
