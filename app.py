@@ -2,8 +2,11 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import os
+import base64
 
-# 1. Configuração da Página
+# ==========================================
+# 1. CONFIGURAÇÃO DA PÁGINA
+# ==========================================
 st.set_page_config(
     page_title="FCB - Futebol Castelo Branco",
     page_icon="⚽",
@@ -11,31 +14,32 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 2. Estilização CSS Personalizada (Cores oficiais da Logo: Azul Marinho, Vermelho e Branco)
+# ==========================================
+# 2. ESTILIZAÇÃO CSS PERSONALIZADA (FCB THEME)
+# ==========================================
 CUSTOM_CSS = """
 <style>
-    /* Import de Fontes Esportivas */
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');
 
     html, body, [class*="css"] {
         font-family: 'Montserrat', sans-serif;
     }
 
-    /* Fundo Principal Dark Navy */
+    /* Fundo Escuro Esportivo */
     .stApp {
         background-color: #070D18;
         color: #F1F5F9;
     }
 
-    /* Estilo do Cabeçalho Principal */
+    /* Banner do Cabeçalho Oficial */
     .header-container {
-        background: linear-gradient(135deg, #0B1B3D 0%, #152844 50%, #C8102E 100%);
-        padding: 25px;
+        background: linear-gradient(135deg, #0B1B3D 0%, #152844 60%, #C8102E 100%);
+        padding: 20px 30px;
         border-radius: 15px;
         box-shadow: 0 8px 24px rgba(200, 16, 46, 0.25);
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 25px;
         margin-bottom: 25px;
         border-left: 6px solid #C8102E;
     }
@@ -47,13 +51,14 @@ CUSTOM_CSS = """
         margin: 0;
         letter-spacing: 1.5px;
         text-transform: uppercase;
+        line-height: 1.1;
     }
 
     .header-subtitle {
         color: #CBD5E1;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
-        margin: 5px 0 0 0;
+        margin: 6px 0 0 0;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
@@ -77,7 +82,7 @@ CUSTOM_CSS = """
 
     .metric-title {
         color: #94A3B8;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -92,7 +97,7 @@ CUSTOM_CSS = """
 
     .metric-sub {
         color: #E2E8F0;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
     }
 
@@ -120,7 +125,7 @@ CUSTOM_CSS = """
         color: #FFFFFF !important;
     }
 
-    /* Botão de Atualização Customizado */
+    /* Botão Vermelho Oficial FCB */
     .stButton>button {
         background: linear-gradient(90deg, #C8102E 0%, #990B20 100%);
         color: white;
@@ -141,53 +146,64 @@ CUSTOM_CSS = """
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
-# 3. Leitura dos Dados do Google Sheets
+# ==========================================
+# 3. CARREGAMENTO DOS DADOS (GOOGLE SHEETS)
+# ==========================================
 FILE_ID = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 GID = "1092123094"
 CSV_URL = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=csv&gid={GID}"
 
 @st.cache_data(ttl=0)
 def load_data():
+    # header=3 pula o título inicial e lê diretamente o cabeçalho das colunas
     df = pd.read_csv(CSV_URL, header=3)
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
     
-    # Converter colunas numéricas com segurança
     colunas_numericas = ["Gols", "Assistências", "Gols Contra", "Participações em Gols"]
     for col in colunas_numericas:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
     
-    # Se a coluna de Participações não existir, calcula automaticamente
     if "Participações em Gols" not in df.columns and "Gols" in df.columns and "Assistências" in df.columns:
         df["Participações em Gols"] = df["Gols"] + df["Assistências"]
 
     return df
 
-# 4. Layout do Cabeçalho Oficial (Com Logo e Título)
-col_logo, col_title = st.columns([1, 5])
+# Helper para converter imagem da logo em Base64
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-with col_logo:
-    if os.path.exists("logo.png"):
-        logo = Image.open("logo.png")
-        st.image(logo, width=120)
-    else:
-        st.markdown("<h1>🛡️</h1>", unsafe_allow_html=True)
+# ==========================================
+# 4. CABEÇALHO OFICIAL COM LOGO INTEGRADA
+# ==========================================
+try:
+    logo_base64 = get_base64_of_bin_file("logo.png")
+    logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 100px; width: auto; object-fit: contain;">'
+except:
+    logo_html = '<h1 style="margin:0; font-size: 50px;">🛡️</h1>'
 
-with col_title:
-    st.markdown("""
-        <div class="header-container">
-            <div>
-                <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
-                <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
-            </div>
+st.markdown(f"""
+    <div class="header-container">
+        <div>
+            {logo_html}
         </div>
-    """, unsafe_allow_html=True)
+        <div>
+            <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
+            <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
-# 5. Barra Lateral (Sidebar) com Filtros e Informações
+# ==========================================
+# 5. BARRA LATERAL (SIDEBAR)
+# ==========================================
 with st.sidebar:
     if os.path.exists("logo.png"):
         st.image("logo.png", use_container_width=True)
+    
     st.markdown("### ⚙️ Painel de Controle")
     
     if st.button("🔄 Atualizar Estatísticas"):
@@ -195,31 +211,32 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
-    st.markdown("### 🔍 Filtros da Tabela")
+    st.markdown("### 🔍 Filtros")
 
+# ==========================================
+# 6. CONTEÚDO PRINCIPAL
+# ==========================================
 try:
     df = load_data()
 
-    # Filtros na Sidebar
+    # Filtro por time e busca de jogador
     if "Time" in df.columns:
-        times_unicos = ["Todos"] + sorted(list(df["Time"].unique()))
+        times_unicos = ["Todos"] + sorted(list(df["Time"].dropna().unique()))
         filtro_time = st.sidebar.selectbox("Colete / Time:", times_unicos)
     else:
         filtro_time = "Todos"
 
     busca_jogador = st.sidebar.text_input("Buscar Atleta por Nome:", "")
 
-    # Aplicação dos Filtros
     df_filtrado = df.copy()
     if filtro_time != "Todos":
         df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
     if busca_jogador:
         df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
 
-    # Ordenar por Gols e Assistências
     df_filtrado = df_filtrado.sort_values(by=["Gols", "Assistências", "Participações em Gols"], ascending=False)
 
-    # 6. Destaques da Temporada (Cards de Top Performers)
+    # Destaques Rápidos
     artilheiro = df.sort_values(by="Gols", ascending=False).iloc[0] if not df.empty else None
     garcom = df.sort_values(by="Assistências", ascending=False).iloc[0] if not df.empty else None
     lider_participacoes = df.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df.empty else None
@@ -230,7 +247,7 @@ try:
         total_g = df["Gols"].sum()
         st.markdown(f"""
             <div class="metric-card">
-                <div class="metric-title">⚽ Total de Gols</div>
+                <div class="metric-title">⚽ TOTAL DE GOLS</div>
                 <div class="metric-value">{total_g}</div>
                 <div class="metric-sub">Marcados em 2026</div>
             </div>
@@ -240,7 +257,7 @@ try:
         if artilheiro is not None:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-title">🥇 Artilheiro Principal</div>
+                    <div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>
                     <div class="metric-value gold-badge">{artilheiro['Gols']} <span style="font-size:16px;">gols</span></div>
                     <div class="metric-sub">👑 {artilheiro['Jogador']} ({artilheiro['Time']})</div>
                 </div>
@@ -250,7 +267,7 @@ try:
         if garcom is not None:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-title">🎯 Rei das Assistências</div>
+                    <div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>
                     <div class="metric-value silver-badge">{garcom['Assistências']} <span style="font-size:16px;">ast</span></div>
                     <div class="metric-sub">👟 {garcom['Jogador']} ({garcom['Time']})</div>
                 </div>
@@ -260,7 +277,7 @@ try:
         if lider_participacoes is not None:
             st.markdown(f"""
                 <div class="metric-card">
-                    <div class="metric-title">🔥 Maior Participação</div>
+                    <div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>
                     <div class="metric-value red-badge">{lider_participacoes['Participações em Gols']} <span style="font-size:16px;">G+A</span></div>
                     <div class="metric-sub">⚡ {lider_participacoes['Jogador']} ({lider_participacoes['Time']})</div>
                 </div>
@@ -268,20 +285,18 @@ try:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 7. Abas de Conteúdo
+    # ABAS DE NAVEGAÇÃO
     aba1, aba2, aba3 = st.tabs(["🏆 Classificação Geral", "⚔️ Duelo de Coletes (Times)", "🏅 Top 3 Artilharia"])
 
     with aba1:
         st.subheader("📋 Tabela Completa de Desempenho")
-        
-        # Formatação e Exibição da Tabela com Streamlit Dataframe
         st.dataframe(
             df_filtrado,
             use_container_width=True,
             hide_index=True,
             column_config={
-                "Jogador": st.column_config.TextColumn("Atleta 🏃", help="Nome do Jogador"),
-                "Time": st.column_config.TextColumn("Colete 👕", help="Time do Atleta"),
+                "Jogador": st.column_config.TextColumn("Atleta 🏃"),
+                "Time": st.column_config.TextColumn("Colete 👕"),
                 "Gols": st.column_config.NumberColumn("Gols ⚽", format="%d"),
                 "Assistências": st.column_config.NumberColumn("Assistências 🎯", format="%d"),
                 "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d"),
