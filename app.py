@@ -365,28 +365,30 @@ st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 weather_info = get_next_saturday_weather()
 
 if weather_info["status"]:
-    weather_html = f"""
-    <div class="weather-pill">
-        <span>{weather_info['condicao']}</span> • 
-        <span>🌡️ {weather_info['temp']}</span> • 
-        <span>🌧️ Chance de Chuva: <b>{weather_info['pop']}</b></span>
-    </div>
-    """
+    weather_html = (
+        f'<div class="weather-pill">'
+        f'<span>{weather_info["condicao"]}</span> • '
+        f'<span>🌡️ {weather_info["temp"]}</span> • '
+        f'<span>🌧️ Chance de Chuva: <b>{weather_info["pop"]}</b></span>'
+        f'</div>'
+    )
 else:
     weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
 
-match_card_code = f"""
-<div class="match-info-card">
-    <div>
-        <div class="match-info-title">📍 PRÓXIMO ENCONTRO</div>
-        <div class="match-info-detail">Sábado ({weather_info.get('data', 'Semana')}) às 16:00 • Cambé - PR</div>
-    </div>
-    <div>
-        {weather_html}
-    </div>
-</div>
-"""
-st.markdown(textwrap.dedent(match_card_code), unsafe_allow_html=True)
+data_jogo = weather_info.get('data', '')
+data_str = f" ({data_jogo})" if data_jogo else ""
+
+match_card_code = (
+    f'<div class="match-info-card">'
+    f'<div>'
+    f'<div class="match-info-title">📍 PRÓXIMO ENCONTRO</div>'
+    f'<div class="match-info-detail">Sábado{data_str} às 16:00 • Cambé - PR</div>'
+    f'</div>'
+    f'<div>{weather_html}</div>'
+    f'</div>'
+)
+
+st.markdown(match_card_code, unsafe_allow_html=True)
 
 # ==========================================
 # 6. CONTEÚDO PRINCIPAL
