@@ -28,10 +28,7 @@ CUSTOM_CSS = """
     }
 
     /* Oculta a barra lateral do Streamlit */
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    [data-testid="collapsedControl"] {
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] {
         display: none !important;
     }
 
@@ -41,7 +38,7 @@ CUSTOM_CSS = """
         color: #F1F5F9;
     }
 
-    /* Banner do Cabeçalho Oficial (Centralizado) */
+    /* Banner do Cabeçalho Oficial */
     .header-container {
         background: linear-gradient(135deg, #0B1B3D 0%, #152844 60%, #C8102E 100%);
         padding: 25px 40px;
@@ -75,51 +72,81 @@ CUSTOM_CSS = """
         letter-spacing: 1.5px;
     }
 
-    /* Card do Próximo Jogo & Clima */
-    .match-info-card {
+    /* Cards Informativos (Próximo Jogo e Placar) */
+    .info-card {
         background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
         border: 1px solid #334155;
-        border-left: 5px solid #38BDF8;
         border-radius: 12px;
-        padding: 15px 25px;
-        margin-bottom: 25px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        min-height: 110px;
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 15px;
+        flex-direction: column;
+        justify-content: center;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    .match-info-title {
+    .card-border-blue { border-left: 5px solid #38BDF8; }
+    .card-border-gold { border-left: 5px solid #F59E0B; }
+
+    .card-tag {
         color: #38BDF8;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
 
-    .match-info-detail {
+    .card-tag-gold {
+        color: #F59E0B;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .card-main-text {
         color: #FFFFFF;
         font-size: 15px;
         font-weight: 700;
-        margin-top: 2px;
+        margin-top: 4px;
     }
 
     .weather-pill {
         background-color: #0F2144;
         border: 1px solid #1E3A8A;
         border-radius: 20px;
-        padding: 6px 16px;
+        padding: 4px 12px;
         color: #F1F5F9;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        margin-top: 8px;
     }
 
-    /* Cards de Métricas e Destaques */
+    /* Placar Visual de Vitórias */
+    .scoreboard-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        background-color: #0B1329;
+        border-radius: 10px;
+        padding: 10px 15px;
+        margin-top: 8px;
+        border: 1px solid #1E293B;
+    }
+
+    .team-score {
+        font-size: 20px;
+        font-weight: 900;
+    }
+    .score-red { color: #EF4444; }
+    .score-blue { color: #38BDF8; }
+    .score-divider { color: #64748B; font-weight: 900; font-size: 16px; }
+
+    /* Cards de Métricas */
     .metric-card {
         background: #0F2144;
         border: 1px solid #1E3A8A;
@@ -128,12 +155,6 @@ CUSTOM_CSS = """
         border-radius: 12px;
         text-align: center;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-        transition: transform 0.2s ease;
-    }
-
-    .metric-card:hover {
-        transform: translateY(-3px);
-        border-color: #C8102E;
     }
 
     .metric-title {
@@ -161,7 +182,7 @@ CUSTOM_CSS = """
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
 
-    /* ESTILO DAS PÍLULAS / CÍRCULOS DE NAVEGAÇÃO */
+    /* Navegação por Pílulas */
     div[data-testid="stRadio"] > div {
         background-color: #0F172A;
         padding: 8px 12px;
@@ -189,19 +210,17 @@ CUSTOM_CSS = """
         background-color: rgba(200, 16, 46, 0.2) !important;
     }
 
-    /* Pílula Selecionada */
     div[data-testid="stRadio"] label[data-checked="true"] {
         background: linear-gradient(90deg, #C8102E 0%, #990B20 100%) !important;
         color: #FFFFFF !important;
         box-shadow: 0 4px 14px rgba(200, 16, 46, 0.4) !important;
     }
 
-    /* Esconde a bolinha de rádio padrão */
     div[data-testid="stRadio"] label > div:first-child {
         display: none !important;
     }
 
-    /* ESTILO PARA OS CARDS DO ELENCO */
+    /* Cards do Elenco */
     .roster-card {
         background-color: #0F172A;
         border-radius: 12px;
@@ -215,10 +234,6 @@ CUSTOM_CSS = """
         margin-bottom: 15px;
         color: #EF4444;
         font-weight: 900;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 10px;
     }
     .roster-header-azul {
         border-bottom: 3px solid #38BDF8;
@@ -226,22 +241,14 @@ CUSTOM_CSS = """
         margin-bottom: 15px;
         color: #38BDF8;
         font-weight: 900;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        gap: 10px;
     }
     .pos-section-title {
         color: #F1F5F9;
         font-size: 13px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
         margin-top: 15px;
         margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
     }
     .player-pill {
         background: #1E293B;
@@ -261,7 +268,7 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 # ==========================================
 # 3. CARREGAMENTO DOS DADOS E CLIMA
 # ==========================================
-FILE_ID = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
+FILE_ID = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
 GID = "1092123094"
 CSV_URL = f"https://docs.google.com/spreadsheets/d/{FILE_ID}/export?format=csv&gid={GID}"
 
@@ -271,7 +278,7 @@ def load_data():
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
     
-    colunas_numericas = ["Gols", "Assistências", "Gols Contra", "Participações em Gols"]
+    colunas_numericas = ["Gols", "Assistências", "Gols Contra", "Participações em Gols", "Vitórias"]
     for col in colunas_numericas:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
@@ -283,7 +290,6 @@ def load_data():
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
-    """Busca o clima de Cambé - PR para o próximo sábado às 16:00."""
     try:
         today = datetime.now()
         days_until_saturday = (5 - today.weekday()) % 7
@@ -293,7 +299,6 @@ def get_next_saturday_weather():
         next_saturday = today + timedelta(days=days_until_saturday)
         date_str = next_saturday.strftime("%d/%m")
 
-        # Coordenadas de Cambé - PR
         lat, lon = -23.2758, -51.2783
         url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m,precipitation_probability,weather_code&timezone=America%2FSao_Paulo"
         
@@ -348,9 +353,7 @@ except:
 
 header_code = f"""
 <div class="header-container">
-    <div>
-        {logo_html}
-    </div>
+    <div>{logo_html}</div>
     <div>
         <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
         <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
@@ -360,8 +363,22 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 5. CARD DE PRÓXIMA PARTIDA E CLIMA
+# 5. CARDS SUPERIORES (PRÓXIMO JOGO & PLACAR DE VITÓRIAS)
 # ==========================================
+df = load_data()
+
+# Leitura do Placar de Vitórias por Time
+vitorias_vermelho = 0
+vitorias_azul = 0
+
+if "Time" in df.columns:
+    if "Vitórias" in df.columns:
+        vitorias_vermelho = df[df["Time"] == "Vermelho"]["Vitórias"].sum()
+        vitorias_azul = df[df["Time"] == "Azul"]["Vitórias"].sum()
+    elif "Vitória" in df.columns:
+        vitorias_vermelho = df[df["Time"] == "Vermelho"]["Vitória"].sum()
+        vitorias_azul = df[df["Time"] == "Azul"]["Vitória"].sum()
+
 weather_info = get_next_saturday_weather()
 
 if weather_info["status"]:
@@ -369,7 +386,7 @@ if weather_info["status"]:
         f'<div class="weather-pill">'
         f'<span>{weather_info["condicao"]}</span> • '
         f'<span>🌡️ {weather_info["temp"]}</span> • '
-        f'<span>🌧️ Chance de Chuva: <b>{weather_info["pop"]}</b></span>'
+        f'<span>🌧️ Chuva: <b>{weather_info["pop"]}</b></span>'
         f'</div>'
     )
 else:
@@ -378,25 +395,35 @@ else:
 data_jogo = weather_info.get('data', '')
 data_str = f" ({data_jogo})" if data_jogo else ""
 
-match_card_code = (
-    f'<div class="match-info-card">'
-    f'<div>'
-    f'<div class="match-info-title">📍 PRÓXIMO ENCONTRO</div>'
-    f'<div class="match-info-detail">Sábado{data_str} às 16:00 • Cambé - PR</div>'
-    f'</div>'
-    f'<div>{weather_html}</div>'
-    f'</div>'
-)
+col_jogo, col_placar = st.columns(2)
 
-st.markdown(match_card_code, unsafe_allow_html=True)
+with col_jogo:
+    card_jogo_html = (
+        f'<div class="info-card card-border-blue">'
+        f'<div class="card-tag">📍 PRÓXIMO ENCONTRO</div>'
+        f'<div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>'
+        f'<div>{weather_html}</div>'
+        f'</div>'
+    )
+    st.markdown(card_jogo_html, unsafe_allow_html=True)
+
+with col_placar:
+    card_placar_html = (
+        f'<div class="info-card card-border-gold">'
+        f'<div class="card-tag-gold">🏆 PLACAR GERAL DE VITÓRIAS</div>'
+        f'<div class="scoreboard-box">'
+        f'<span class="team-score score-red">🔴 Vermelho: {vitorias_vermelho}</span>'
+        f'<span class="score-divider">X</span>'
+        f'<span class="team-score score-blue">🔵 Azul: {vitorias_azul}</span>'
+        f'</div>'
+        f'</div>'
+    )
+    st.markdown(card_placar_html, unsafe_allow_html=True)
 
 # ==========================================
-# 6. CONTEÚDO PRINCIPAL
+# 6. CARDS DE DESTAQUES RÁPIDOS
 # ==========================================
 try:
-    df = load_data()
-
-    # Cards de Destaques Rápidos
     artilheiro = df.sort_values(by="Gols", ascending=False).iloc[0] if not df.empty else None
     garcom = df.sort_values(by="Assistências", ascending=False).iloc[0] if not df.empty else None
     lider_participacoes = df.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df.empty else None
@@ -405,52 +432,52 @@ try:
 
     with c1:
         total_g = df["Gols"].sum()
-        card_total = f"""
-        <div class="metric-card">
-            <div class="metric-title">⚽ TOTAL DE GOLS</div>
-            <div class="metric-value">{total_g}</div>
-            <div class="metric-sub">Marcados em 2026</div>
-        </div>
-        """
-        st.markdown(textwrap.dedent(card_total), unsafe_allow_html=True)
+        card_total = (
+            f'<div class="metric-card">'
+            f'<div class="metric-title">⚽ TOTAL DE GOLS</div>'
+            f'<div class="metric-value">{total_g}</div>'
+            f'<div class="metric-sub">Marcados em 2026</div>'
+            f'</div>'
+        )
+        st.markdown(card_total, unsafe_allow_html=True)
 
     with c2:
         if artilheiro is not None:
-            card_artilheiro = f"""
-            <div class="metric-card">
-                <div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>
-                <div class="metric-value gold-badge">{artilheiro['Gols']} <span style="font-size:16px;">gols</span></div>
-                <div class="metric-sub">👑 {artilheiro['Jogador']} ({artilheiro['Time']})</div>
-            </div>
-            """
-            st.markdown(textwrap.dedent(card_artilheiro), unsafe_allow_html=True)
+            card_artilheiro = (
+                f'<div class="metric-card">'
+                f'<div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>'
+                f'<div class="metric-value gold-badge">{artilheiro["Gols"]} <span style="font-size:16px;">gols</span></div>'
+                f'<div class="metric-sub">👑 {artilheiro["Jogador"]} ({artilheiro["Time"]})</div>'
+                f'</div>'
+            )
+            st.markdown(card_artilheiro, unsafe_allow_html=True)
 
     with c3:
         if garcom is not None:
-            card_garcom = f"""
-            <div class="metric-card">
-                <div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>
-                <div class="metric-value silver-badge">{garcom['Assistências']} <span style="font-size:16px;">ast</span></div>
-                <div class="metric-sub">👟 {garcom['Jogador']} ({garcom['Time']})</div>
-            </div>
-            """
-            st.markdown(textwrap.dedent(card_garcom), unsafe_allow_html=True)
+            card_garcom = (
+                f'<div class="metric-card">'
+                f'<div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>'
+                f'<div class="metric-value silver-badge">{garcom["Assistências"]} <span style="font-size:16px;">ast</span></div>'
+                f'<div class="metric-sub">👟 {garcom["Jogador"]} ({garcom["Time"]})</div>'
+                f'</div>'
+            )
+            st.markdown(card_garcom, unsafe_allow_html=True)
 
     with c4:
         if lider_participacoes is not None:
-            card_part = f"""
-            <div class="metric-card">
-                <div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>
-                <div class="metric-value red-badge">{lider_participacoes['Participações em Gols']} <span style="font-size:16px;">G+A</span></div>
-                <div class="metric-sub">⚡ {lider_participacoes['Jogador']} ({lider_participacoes['Time']})</div>
-            </div>
-            """
-            st.markdown(textwrap.dedent(card_part), unsafe_allow_html=True)
+            card_part = (
+                f'<div class="metric-card">'
+                f'<div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>'
+                f'<div class="metric-value red-badge">{lider_participacoes["Participações em Gols"]} <span style="font-size:16px;">G+A</span></div>'
+                f'<div class="metric-sub">⚡ {lider_participacoes["Jogador"]} ({lider_participacoes["Time"]})</div>'
+                f'</div>'
+            )
+            st.markdown(card_part, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ==========================================
-    # 7. NAVEGAÇÃO POR PÍLULAS/CÍRCULOS
+    # 7. NAVEGAÇÃO POR PÍLULAS
     # ==========================================
     opcao_aba = st.radio(
         label="",
@@ -502,7 +529,6 @@ try:
     elif opcao_aba == "👥 Elenco dos Times":
         st.subheader("👥 Elenco Oficial dos Times")
 
-        # Dados do Elenco
         elenco_vermelho = {
             "Goleiros": ["Vozinha"],
             "Zagueiros": ["Nilton", "Carlão (TCR)", "Camarão Sergipano"],
@@ -529,7 +555,6 @@ try:
             "Atacantes": "⚡"
         }
 
-        # TIME VERMELHO
         with col_v:
             st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 TIME VERMELHO</h2></div>', unsafe_allow_html=True)
             for pos, jogadores in elenco_vermelho.items():
@@ -538,7 +563,6 @@ try:
                 st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # TIME AZUL
         with col_a:
             st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 TIME AZUL</h2></div>', unsafe_allow_html=True)
             for pos, jogadores in elenco_azul.items():
@@ -560,26 +584,26 @@ try:
             with col_vermelho:
                 gols_v = df_v["Gols"].values[0] if not df_v.empty else 0
                 ast_v = df_v["Assistências"].values[0] if not df_v.empty else 0
-                card_v = f"""
-                <div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">
-                    <h2 style="color: #EF4444; margin: 0;">🔴 TIME VERMELHO</h2>
-                    <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_v} <span style="font-size: 20px;">GOLS</span></h1>
-                    <p style="color: #CBD5E1; font-weight: 600;">{ast_v} Assistências Totais</p>
-                </div>
-                """
-                st.markdown(textwrap.dedent(card_v), unsafe_allow_html=True)
+                card_v = (
+                    f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">'
+                    f'<h2 style="color: #EF4444; margin: 0;">🔴 TIME VERMELHO</h2>'
+                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_v} <span style="font-size: 20px;">GOLS</span></h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_v} Assistências Totais</p>'
+                    f'</div>'
+                )
+                st.markdown(card_v, unsafe_allow_html=True)
 
             with col_azul:
                 gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
                 ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
-                card_a = f"""
-                <div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">
-                    <h2 style="color: #38BDF8; margin: 0;">🔵 TIME AZUL</h2>
-                    <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>
-                    <p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>
-                </div>
-                """
-                st.markdown(textwrap.dedent(card_a), unsafe_allow_html=True)
+                card_a = (
+                    f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">'
+                    f'<h2 style="color: #38BDF8; margin: 0;">🔵 TIME AZUL</h2>'
+                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>'
+                    f'</div>'
+                )
+                st.markdown(card_a, unsafe_allow_html=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
             st.dataframe(stats_times, use_container_width=True, hide_index=True)
@@ -594,15 +618,15 @@ try:
         
         for idx, (_, row) in enumerate(top3_gols.iterrows()):
             with cols_podio[idx]:
-                card_podio = f"""
-                <div style="background: #0F2144; border-top: 5px solid {podio_colors[idx]}; padding: 20px; border-radius: 12px; text-align: center;">
-                    <h3 style="color: {podio_colors[idx]}; margin: 0;">{podio_icons[idx]}</h3>
-                    <h2 style="color: #FFF; margin: 10px 0;">{row['Jogador']}</h2>
-                    <h1 style="color: {podio_colors[idx]}; margin: 0;">{row['Gols']} <span style="font-size: 16px;">Gols</span></h1>
-                    <p style="color: #94A3B8; margin-top: 5px;">Time: {row['Time']} | {row['Assistências']} Assistências</p>
-                </div>
-                """
-                st.markdown(textwrap.dedent(card_podio), unsafe_allow_html=True)
+                card_podio = (
+                    f'<div style="background: #0F2144; border-top: 5px solid {podio_colors[idx]}; padding: 20px; border-radius: 12px; text-align: center;">'
+                    f'<h3 style="color: {podio_colors[idx]}; margin: 0;">{podio_icons[idx]}</h3>'
+                    f'<h2 style="color: #FFF; margin: 10px 0;">{row["Jogador"]}</h2>'
+                    f'<h1 style="color: {podio_colors[idx]}; margin: 0;">{row["Gols"]} <span style="font-size: 16px;">Gols</span></h1>'
+                    f'<p style="color: #94A3B8; margin-top: 5px;">Time: {row["Time"]} | {row["Assistências"]} Assistências</p>'
+                    f'</div>'
+                )
+                st.markdown(card_podio, unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Erro ao carregar dados da planilha: {e}")
