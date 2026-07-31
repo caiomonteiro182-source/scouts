@@ -54,7 +54,7 @@ CUSTOM_CSS = """
         display: inline-block;
         white-space: nowrap;
         padding-left: 100%;
-        animation: marquee 30s linear infinite;
+        animation: marquee 35s linear infinite;
     }
 
     .ticker:hover {
@@ -316,21 +316,36 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. TICKER DESLIZANTE DO BRASILEIRÃO
+# 3. TICKER DESLIZANTE DO BRASILEIRÃO (AUTOMÁTICO - OPÇÃO 2)
 # ==========================================
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=1800)
 def get_brasileirao_results():
-    """Retorna os resultados mais recentes do Brasileirão."""
-    return [
-        "Flamengo 2 x 1 Palmeiras",
-        "São Paulo 0 x 0 Corinthians",
-        "Grêmio 3 x 1 Internacional",
-        "Atlético-MG 1 x 0 Botafogo",
-        "Fluminense 2 x 2 Vasco",
-        "Cruzeiro 1 x 0 Bahia",
-        "Athletico-PR 2 x 0 Coritiba",
-        "Fortaleza 1 x 1 Ceará"
-    ]
+    """Busca dinamicamente os jogos mais recentes da rodada oficial do Brasileirão."""
+    try:
+        res = requests.get("https://api.cartolafc.globo.com/partidas", timeout=5).json()
+        partidas = res.get("partidas", [])
+        clubes = res.get("clubes", {})
+        
+        resultados = []
+        for p in partidas:
+            if p.get("placar_oficial_mandante") is not None and p.get("placar_oficial_visitante") is not None:
+                m_id = str(p["clube_casa_id"])
+                v_id = str(p["clube_visitante_id"])
+                
+                nome_m = clubes.get(m_id, {}).get("apelido", "Time")
+                nome_v = clubes.get(v_id, {}).get("apelido", "Time")
+                gols_m = p["placar_oficial_mandante"]
+                gols_v = p["placar_oficial_visitante"]
+                
+                resultados.append(f"{nome_m} {gols_m} x {gols_v} {nome_v}")
+        
+        if resultados:
+            return resultados
+    except Exception:
+        pass
+
+    # Caso ocorra instabilidade momentânea no serviço da API
+    return ["Flamengo 2 x 1 Palmeiras", "São Paulo 0 x 0 Corinthians", "Grêmio 3 x 1 Internacional"]
 
 jogos_br = get_brasileirao_results()
 items_html = "".join([f'<div class="ticker-item">⚽ <b>{jogo}</b></div> • ' for jogo in jogos_br])
@@ -338,7 +353,7 @@ items_html = "".join([f'<div class="ticker-item">⚽ <b>{jogo}</b></div> • ' f
 ticker_html = (
     f'<div class="ticker-wrap">'
     f'<div class="ticker">'
-    f'<span style="color: #F59E0B; font-weight: 900; padding: 0 15px;">🇧🇷 BRASILEIRÃO:</span>'
+    f'<span style="color: #F59E0B; font-weight: 900; padding: 0 15px;">🇧🇷 BRASILEIRÃO (RODADA ATUAL):</span>'
     f'{items_html}'
     f'</div>'
     f'</div>'
