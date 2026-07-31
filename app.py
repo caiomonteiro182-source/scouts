@@ -630,7 +630,7 @@ horas, rem = divmod(tempo_restante.seconds, 3600)
 minutos, segundos = divmod(rem, 60)
 
 timer_html = (
-    f'<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center;">'
+    f'<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; justify-content: center;">'
     f'<span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>'
     f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
     f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{dias:02d}d</span></div>'
@@ -648,7 +648,7 @@ col_jogo, col_placar = st.columns(2)
 
 with col_jogo:
     card_jogo_html = (
-        f'<div class="info-card card-border-blue">'
+        f'<div class="info-card card-border-blue" style="align-items: center; text-align: center;">'
         f'<div class="card-tag">📍 PRÓXIMO ENCONTRO</div>'
         f'<div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>'
         f'<div>{weather_html}</div>'
