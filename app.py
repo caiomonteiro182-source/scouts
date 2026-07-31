@@ -663,6 +663,20 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # CONTEÚDO DE CADA ABA
+    elif opcao_aba == "📅 Últimos Jogos FCB":
+        st.subheader("📅 Resultados dos Últimos Encontros")
+        df_historico_jogos = load_match_history()
+
+        # Configuração de alinhamento para todas as colunas da 3ª planilha
+        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
+
+        st.dataframe(
+            df_historico_jogos,
+            use_container_width=True,
+            hide_index=True,
+            column_config=configs_colunas
+        )
+    
     if opcao_aba == "🏆 Classificação Geral":
         st.subheader("📋 Tabela Completa de Desempenho")
         
@@ -700,19 +714,7 @@ try:
             }
         )
 
-    elif opcao_aba == "📅 Últimos Jogos FCB":
-        st.subheader("📅 Resultados dos Últimos Encontros")
-        df_historico_jogos = load_match_history()
-
-        # Configuração de alinhamento para todas as colunas da 3ª planilha
-        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
-
-        st.dataframe(
-            df_historico_jogos,
-            use_container_width=True,
-            hide_index=True,
-            column_config=configs_colunas
-        )
+    
 
     elif opcao_aba == "👥 Elenco dos Times":
         st.subheader("👥 Elenco Oficial dos Times")
