@@ -706,8 +706,8 @@ try:
     opcao_aba = st.radio(
         label="",
         options=[
-            "📅 Últimos Jogos FCB",
             "🏆 Classificação Geral",
+            "📅 Últimos Jogos FCB",
             "👥 Elenco dos Times",
             "⚔️ Duelo de Times",
             "🏅 Top 3 Artilharia"
@@ -719,20 +719,7 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # CONTEÚDO DE CADA ABA
-    if opcao_aba == "📅 Últimos Jogos FCB":
-        st.subheader("📅 Resultados dos Últimos Encontros")
-        df_historico_jogos = load_match_history()
-
-        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
-
-        st.dataframe(
-            df_historico_jogos,
-            use_container_width=True,
-            hide_index=True,
-            column_config=configs_colunas
-        )
-
-    elif opcao_aba == "🏆 Classificação Geral":
+    if opcao_aba == "🏆 Classificação Geral":
         st.subheader("📋 Tabela Completa de Desempenho")
         
         col_filtro1, col_filtro2 = st.columns([1, 2])
@@ -767,6 +754,19 @@ try:
                 "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d", alignment="center"),
                 "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
             }
+        )
+
+    elif opcao_aba == "📅 Últimos Jogos FCB":
+        st.subheader("📅 Resultados dos Últimos Encontros")
+        df_historico_jogos = load_match_history()
+
+        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
+
+        st.dataframe(
+            df_historico_jogos,
+            use_container_width=True,
+            hide_index=True,
+            column_config=configs_colunas
         )
 
     elif opcao_aba == "👥 Elenco dos Times":
@@ -874,7 +874,6 @@ try:
     # ==========================================
     # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
     # ==========================================
-    # Variáveis prontas para integração futura (coloque aqui os dados reais depois):
     entradas = "R$ 0,00"
     saidas = "R$ 0,00"
     saldo_caixa = "R$ 0,00"
