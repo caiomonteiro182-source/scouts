@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from PIL import Image
 import os
 import base64
 
@@ -11,7 +10,7 @@ st.set_page_config(
     page_title="FCB - Futebol Castelo Branco",
     page_icon="⚽",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # Mantém o menu lateral recolhido por padrão
 )
 
 # ==========================================
@@ -23,6 +22,16 @@ CUSTOM_CSS = """
 
     html, body, [class*="css"] {
         font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Oculta completamente a barra lateral do Streamlit */
+    [data-testid="stSidebar"] {
+        display: none !important;
+    }
+    
+    /* Remove espaço residual do botão de colapso da sidebar */
+    [data-testid="collapsedControl"] {
+        display: none !important;
     }
 
     /* Fundo Escuro Esportivo */
@@ -105,7 +114,7 @@ CUSTOM_CSS = """
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
 
-    /* Estilização de Abas Ajustada */
+    /* Estilização de Abas Ajustada com Espaçamento Correto */
     .stTabs [data-baseweb="tab-list"] {
         gap: 12px;
         background-color: #0F172A;
@@ -115,7 +124,7 @@ CUSTOM_CSS = """
 
     .stTabs [data-baseweb="tab"] {
         height: auto;
-        padding: 10px 20px !important;
+        padding: 10px 22px !important;
         border-radius: 8px;
         color: #94A3B8;
         font-weight: 700;
@@ -178,7 +187,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 # ==========================================
-# 4. CABEÇALHO OFICIAL COM LOGO INTEGRADA
+# 4. CABEÇALHO OFICIAL + BOTÃO ATUALIZAR
 # ==========================================
 try:
     logo_base64 = get_base64_of_bin_file("logo.png")
@@ -186,56 +195,35 @@ try:
 except:
     logo_html = '<h1 style="margin:0; font-size: 50px;">🛡️</h1>'
 
-st.markdown(f"""
-    <div class="header-container">
-        <div>
-            {logo_html}
-        </div>
-        <div>
-            <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
-            <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+col_header, col_btn = st.columns([5, 1], vertical_alignment="center")
 
-# ==========================================
-# 5. BARRA LATERAL (SIDEBAR)
-# ==========================================
-with st.sidebar:
-    if os.path.exists("logo.png"):
-        st.image("logo.png", use_container_width=True)
-    
-    st.markdown("### ⚙️ Painel de Controle")
-    
+with col_header:
+    st.markdown(f"""
+        <div class="header-container" style="margin-bottom: 0;">
+            <div>
+                {logo_html}
+            </div>
+            <div>
+                <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
+                <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col_btn:
     if st.button("🔄 Atualizar Estatísticas"):
         st.cache_data.clear()
         st.rerun()
-    
-    st.markdown("---")
-    st.markdown("### 🔍 Filtros")
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ==========================================
-# 6. CONTEÚDO PRINCIPAL
+# 5. CONTEÚDO PRINCIPAL E FILTROS EMBUTIDOS
 # ==========================================
 try:
     df = load_data()
 
-    if "Time" in df.columns:
-        times_unicos = ["Todos"] + sorted(list(df["Time"].dropna().unique()))
-        filtro_time = st.sidebar.selectbox("Colete / Time:", times_unicos)
-    else:
-        filtro_time = "Todos"
-
-    busca_jogador = st.sidebar.text_input("Buscar Atleta por Nome:", "")
-
-    df_filtrado = df.copy()
-    if filtro_time != "Todos":
-        df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
-    if busca_jogador:
-        df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
-
-    df_filtrado = df_filtrado.sort_values(by=["Gols", "Assistências", "Participações em Gols"], ascending=False)
-
+    # Destaques Rápidos (Cards)
     artilheiro = df.sort_values(by="Gols", ascending=False).iloc[0] if not df.empty else None
     garcom = df.sort_values(by="Assistências", ascending=False).iloc[0] if not df.empty else None
     lider_participacoes = df.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df.empty else None
@@ -289,6 +277,29 @@ try:
 
     with aba1:
         st.subheader("📋 Tabela Completa de Desempenho")
+        
+        # Filtros reposicionados acima da tabela
+        col_filtro1, col_filtro2 = st.columns([1, 2])
+        
+        with col_filtro1:
+            if "Time" in df.columns:
+                times_unicos = ["Todos os Coletes"] + sorted(list(df["Time"].dropna().unique()))
+                filtro_time = st.selectbox("Filtrar por Colete:", times_unicos)
+            else:
+                filtro_time = "Todos os Coletes"
+
+        with col_filtro2:
+            busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
+
+        # Aplicação dos filtros
+        df_filtrado = df.copy()
+        if filtro_time != "Todos os Coletes":
+            df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
+        if busca_jogador:
+            df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
+
+        df_filtrado = df_filtrado.sort_values(by=["Gols", "Assistências", "Participações em Gols"], ascending=False)
+
         st.dataframe(
             df_filtrado,
             use_container_width=True,
