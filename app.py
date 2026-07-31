@@ -283,17 +283,17 @@ try:
         
         with col_filtro1:
             if "Time" in df.columns:
-                times_unicos = ["Todos os Coletes"] + sorted(list(df["Time"].dropna().unique()))
+                times_unicos = ["Todos os Times"] + sorted(list(df["Time"].dropna().unique()))
                 filtro_time = st.selectbox("Filtrar por Colete:", times_unicos)
             else:
-                filtro_time = "Todos os Coletes"
+                filtro_time = "Todos os Times"
 
         with col_filtro2:
             busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
 
         # Aplicação dos filtros
         df_filtrado = df.copy()
-        if filtro_time != "Todos os Coletes":
+        if filtro_time != "Todos os Times":
             df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
         if busca_jogador:
             df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
