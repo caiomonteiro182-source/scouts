@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="FCB - Futebol Castelo Branco",
     page_icon="⚽",
     layout="wide",
-    initial_sidebar_state="collapsed"  # Mantém o menu lateral recolhido por padrão
+    initial_sidebar_state="collapsed"
 )
 
 # ==========================================
@@ -24,12 +24,10 @@ CUSTOM_CSS = """
         font-family: 'Montserrat', sans-serif;
     }
 
-    /* Oculta completamente a barra lateral do Streamlit */
+    /* Oculta a barra lateral do Streamlit */
     [data-testid="stSidebar"] {
         display: none !important;
     }
-    
-    /* Remove espaço residual do botão de colapso da sidebar */
     [data-testid="collapsedControl"] {
         display: none !important;
     }
@@ -114,27 +112,46 @@ CUSTOM_CSS = """
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
 
-    /* Estilização de Abas Ajustada com Espaçamento Correto */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 12px;
+    /* ==========================================
+       ESTILO DAS PÍLULAS / CÍRCULOS DE NAVEGAÇÃO
+       ========================================== */
+    div[data-testid="stRadio"] > div {
         background-color: #0F172A;
         padding: 8px 12px;
-        border-radius: 12px;
+        border-radius: 50px;
+        display: inline-flex;
+        gap: 10px;
+        border: 1px solid #1E293B;
     }
 
-    .stTabs [data-baseweb="tab"] {
-        height: auto;
-        padding: 10px 22px !important;
-        border-radius: 8px;
-        color: #94A3B8;
-        font-weight: 700;
-        transition: all 0.2s ease;
+    div[data-testid="stRadio"] label {
+        background-color: transparent !important;
+        color: #94A3B8 !important;
+        border-radius: 30px !important;
+        padding: 10px 24px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        border: none !important;
+        margin: 0 !important;
     }
 
-    .stTabs [aria-selected="true"] {
-        background-color: #C8102E !important;
+    div[data-testid="stRadio"] label:hover {
         color: #FFFFFF !important;
-        box-shadow: 0 4px 12px rgba(200, 16, 46, 0.4);
+        background-color: rgba(200, 16, 46, 0.2) !important;
+    }
+
+    /* Pílula Selecionada (Arredondada/Círculo) */
+    div[data-testid="stRadio"] label[data-checked="true"] {
+        background: linear-gradient(90deg, #C8102E 0%, #990B20 100%) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 14px rgba(200, 16, 46, 0.4) !important;
+    }
+
+    /* Esconde a bolinha de rádio padrão */
+    div[data-testid="stRadio"] label > div:first-child {
+        display: none !important;
     }
 
     /* Botão Vermelho Oficial FCB */
@@ -218,12 +235,12 @@ with col_btn:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ==========================================
-# 5. CONTEÚDO PRINCIPAL E FILTROS EMBUTIDOS
+# 5. CONTEÚDO PRINCIPAL
 # ==========================================
 try:
     df = load_data()
 
-    # Destaques Rápidos (Cards)
+    # Cards de Destaques Rápidos
     artilheiro = df.sort_values(by="Gols", ascending=False).iloc[0] if not df.empty else None
     garcom = df.sort_values(by="Assistências", ascending=False).iloc[0] if not df.empty else None
     lider_participacoes = df.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df.empty else None
@@ -272,28 +289,36 @@ try:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ABAS DE NAVEGAÇÃO
-    aba1, aba2, aba3 = st.tabs(["🏆 Classificação", "⚔️ Duelo Times", "🏅 Top 3 Artilharia"])
+    # ==========================================
+    # 6. NAVEGAÇÃO POR PÍLULAS/CÍRCULOS
+    # ==========================================
+    opcao_aba = st.radio(
+        label="",
+        options=["🏆 Classificação Geral", "⚔️ Duelo de Coletes", "🏅 Top 3 Artilharia"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
 
-    with aba1:
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # CONTEÚDO DE CADA ABA
+    if opcao_aba == "🏆 Classificação Geral":
         st.subheader("📋 Tabela Completa de Desempenho")
         
-        # Filtros reposicionados acima da tabela
         col_filtro1, col_filtro2 = st.columns([1, 2])
         
         with col_filtro1:
             if "Time" in df.columns:
-                times_unicos = ["Todos os Times"] + sorted(list(df["Time"].dropna().unique()))
+                times_unicos = ["Todos os Coletes"] + sorted(list(df["Time"].dropna().unique()))
                 filtro_time = st.selectbox("Filtrar por Colete:", times_unicos)
             else:
-                filtro_time = "Todos os Times"
+                filtro_time = "Todos os Coletes"
 
         with col_filtro2:
             busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
 
-        # Aplicação dos filtros
         df_filtrado = df.copy()
-        if filtro_time != "Todos os Times":
+        if filtro_time != "Todos os Coletes":
             df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
         if busca_jogador:
             df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
@@ -314,7 +339,7 @@ try:
             }
         )
 
-    with aba2:
+    elif opcao_aba == "⚔️ Duelo de Coletes":
         st.subheader("⚔️ Comparativo: Colete Vermelho vs Colete Azul")
         if "Time" in df.columns:
             stats_times = df.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
@@ -349,7 +374,7 @@ try:
             st.markdown("<br>", unsafe_allow_html=True)
             st.dataframe(stats_times, use_container_width=True, hide_index=True)
 
-    with aba3:
+    elif opcao_aba == "🏅 Top 3 Artilharia":
         st.subheader("🏅 Pódio da Artilharia")
         top3_gols = df.sort_values(by="Gols", ascending=False).head(3)
         
