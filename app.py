@@ -19,6 +19,7 @@ st.set_page_config(
 # ==========================================
 # 2. ESTILIZAÇÃO CSS PERSONALIZADA (FCB THEME RESPONSIVO)
 # ==========================================
+# CUIDADO: Este bloco deve sempre começar com """ e NÃO com f""" para evitar SyntaxError no Python.
 CUSTOM_CSS = """
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');
@@ -460,18 +461,26 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS TRÊS PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS QUATRO PLANILHAS E CLIMA
 # ==========================================
+# Planilha 1: Estatísticas de Jogadores
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
 
+# Planilha 2: Estatísticas de Vitórias
 ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
 GID_VITORIAS = "1092123094"
 URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv&gid={GID_VITORIAS}"
 
+# Planilha 3: Histórico de Jogos
 ID_PLANILHA_JOGOS = "1Chjvd4vBarn9O4EgXWFnyMe5uIBgUsa4QCHIRr8C6Tk"
 GID_JOGOS = "1092123094"
 URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv&gid={GID_JOGOS}"
+
+# Planilha 4: Histórico Financeiro (NOVA)
+ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
+GID_FINANCEIRO = "1092123094"
+URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
 
 @st.cache_data(ttl=0)
 def load_player_stats():
@@ -507,6 +516,15 @@ def load_match_history():
         return df_jogos
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
+
+@st.cache_data(ttl=0)
+def load_financial_stats():
+    try:
+        df_fin = pd.read_csv(URL_FINANCEIRO)
+        df_fin.columns = df_fin.columns.str.strip()
+        return df_fin
+    except Exception:
+        return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
@@ -584,7 +602,7 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS SUPERIORES COM TEMPORIZADOR LIMPO
+# 6. CARDS SUPERIORES COM TEMPORIZADOR AO VIVO (HTML/JS)
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
@@ -616,30 +634,58 @@ if weather_info["status"]:
 else:
     weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
 
-# CÁLCULO NATIVO DO TEMPORIZADOR (PYTHON)
+# CÁLCULO NATIVO DO TEMPORIZADOR PARA INJETAR NO JAVASCRIPT
 agora = datetime.now()
 dias_ate_sabado = (5 - agora.weekday()) % 7
 if dias_ate_sabado == 0 and agora.hour >= 16:
     dias_ate_sabado = 7
 
 proximo_jogo = (agora + timedelta(days=dias_ate_sabado)).replace(hour=16, minute=0, second=0, microsecond=0)
-tempo_restante = proximo_jogo - agora
+target_date_str = proximo_jogo.isoformat()
 
-dias = tempo_restante.days
-horas, rem = divmod(tempo_restante.seconds, 3600)
-minutos, segundos = divmod(rem, 60)
+# Usando chaves duplicadas {{ e }} para as partes do código JavaScript funcionarem no Python f-string
+timer_html = f"""
+<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; justify-content: center;">
+    <span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>
+    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
+        <span id="timer-days" style="font-size: 13px; font-weight: 900; color: #FFF;">--d</span>
+    </div>
+    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
+        <span id="timer-hours" style="font-size: 13px; font-weight: 900; color: #FFF;">--h</span>
+    </div>
+    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
+        <span id="timer-minutes" style="font-size: 13px; font-weight: 900; color: #FFF;">--m</span>
+    </div>
+    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
+        <span id="timer-seconds" style="font-size: 13px; font-weight: 900; color: #FFF;">--s</span>
+    </div>
+</div>
 
-timer_html = (
-    f'<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; justify-content: center;">'
-    f'<span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>'
-    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
-    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{dias:02d}d</span></div>'
-    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
-    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{horas:02d}h</span></div>'
-    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
-    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{minutos:02d}m</span></div>'
-    f'</div>'
-)
+<!-- Lógica em JS injetada de forma segura para os segundos correrem na tela do navegador -->
+<img src onerror='
+    var countDownDate = new Date("{target_date_str}").getTime();
+    setInterval(function() {{
+        var now = new Date().getTime();
+        var distance = countDownDate - now;
+        
+        if (distance < 0) return;
+        
+        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        var d = document.getElementById("timer-days");
+        if(d) d.innerHTML = String(days).padStart(2, "0") + "d";
+        var h = document.getElementById("timer-hours");
+        if(h) h.innerHTML = String(hours).padStart(2, "0") + "h";
+        var m = document.getElementById("timer-minutes");
+        if(m) m.innerHTML = String(minutes).padStart(2, "0") + "m";
+        var s = document.getElementById("timer-seconds");
+        if(s) s.innerHTML = String(seconds).padStart(2, "0") + "s";
+    }}, 1000);
+' style="display:none;">
+"""
 
 data_jogo = weather_info.get('data', '')
 data_str = f" ({data_jogo})" if data_jogo else ""
@@ -900,20 +946,71 @@ try:
     # ==========================================
     # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
     # ==========================================
-    entradas = "R$ 0,00"
-    saidas = "R$ 0,00"
-    saldo_caixa = "R$ 0,00"
+    df_financeiro = load_financial_stats()
+
+    entradas_val = 0.0
+    saidas_val = 0.0
+    saldo_caixa_val = 0.0
+
+    try:
+        if not df_financeiro.empty:
+            for idx, row in df_financeiro.iterrows():
+                row_str = str(row.values).lower()
+                
+                # Função para extrair números da célula (ignorando textos)
+                def extract_money(linha):
+                    for val in linha:
+                        if pd.isna(val): continue
+                        v_str = str(val).lower().strip()
+                        # Ignora a própria célula de texto (que diz entrada, saída, etc)
+                        if any(w in v_str for w in ['entrada', 'saida', 'saída', 'saldo', 'caixa', 'receita', 'despesa']):
+                            continue
+                        
+                        # Limpa R$ e espaços
+                        v_str = v_str.replace('r$', '').replace(' ', '')
+                        # Lida com o formato numérico brasileiro (ex: 1.500,00)
+                        if ',' in v_str:
+                            v_str = v_str.replace('.', '').replace(',', '.')
+                            
+                        try:
+                            return float(v_str)
+                        except ValueError:
+                            continue
+                    return 0.0
+
+                # Busca as linhas e soma as categorias
+                if "entrada" in row_str or "arrecada" in row_str or "receita" in row_str:
+                    entradas_val += extract_money(row.values)
+                elif "saída" in row_str or "saida" in row_str or "gasto" in row_str or "despesa" in row_str:
+                    saidas_val += extract_money(row.values)
+                elif "saldo" in row_str or "caixa" in row_str:
+                    saldo_caixa_val = extract_money(row.values)
+
+            # Calcula saldo caso ele não seja explícito na tabela
+            if saldo_caixa_val == 0.0 and (entradas_val > 0 or saidas_val > 0):
+                saldo_caixa_val = entradas_val - saidas_val
+
+    except Exception:
+        pass
+
+    # Converte os valores apurados para strings formatadas em Moeda Real (R$)
+    def format_brl(valor):
+        return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+    entradas = format_brl(entradas_val)
+    saidas = format_brl(saidas_val)
+    saldo_caixa = format_brl(saldo_caixa_val)
 
     card_financeiro_html = f"""
     <div class="financial-card">
         <div class="financial-title">💰 PAINEL FINANCEIRO DO CLUBE</div>
         <div class="fin-summary-box">
             <div class="fin-item">
-                <div class="fin-label">📈 Entradas (Mensalidades / Arrecadações)</div>
+                <div class="fin-label">📈 Entradas Totais (Mensalidades / Arrecadações)</div>
                 <div class="fin-value-green">{entradas}</div>
             </div>
             <div class="fin-item">
-                <div class="fin-label">📉 Saídas (Campo / Bolas / Coletes)</div>
+                <div class="fin-label">📉 Saídas Totais (Campo / Bolas / Coletes)</div>
                 <div class="fin-value-red">{saidas}</div>
             </div>
             <div class="fin-item">
