@@ -211,29 +211,6 @@ CUSTOM_CSS = """
         margin-top: 8px;
     }
 
-    /* Contagem Regressiva do Jogo */
-    .timer-container {
-        background-color: #0B1329;
-        border: 1px solid #1E3A8A;
-        border-radius: 8px;
-        padding: 6px 12px;
-        margin-top: 8px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #38BDF8;
-        font-weight: 800;
-        font-size: 13px;
-        width: fit-content;
-    }
-
-    .timer-digits {
-        color: #FFFFFF;
-        font-family: monospace;
-        font-size: 14px;
-        letter-spacing: 1px;
-    }
-
     /* Placar Visual de Vitórias */
     .scoreboard-box {
         display: flex;
@@ -531,18 +508,16 @@ def load_match_history():
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
 
-def get_next_saturday_target():
-    today = datetime.now()
-    days_until_saturday = (5 - today.weekday()) % 7
-    if days_until_saturday == 0 and today.hour >= 18:
-        days_until_saturday = 7
-    next_saturday = today + timedelta(days=days_until_saturday)
-    return next_saturday.replace(hour=16, minute=0, second=0, microsecond=0)
-
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
     try:
-        next_saturday = get_next_saturday_target()
+        today = datetime.now()
+        days_until_saturday = (5 - today.weekday()) % 7
+        
+        if days_until_saturday == 0 and today.hour >= 18:
+            days_until_saturday = 7
+        
+        next_saturday = today + timedelta(days=days_until_saturday)
         date_str = next_saturday.strftime("%d/%m")
 
         lat, lon = -23.2758, -51.2783
@@ -609,7 +584,7 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS SUPERIORES E TEMPORIZADOR
+# 6. CARDS SUPERIORES
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
@@ -641,226 +616,26 @@ if weather_info["status"]:
 else:
     weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
 
-target_sat = get_next_saturday_target()
-iso_target = target_sat.isoformat()
 data_jogo = weather_info.get('data', '')
 data_str = f" ({data_jogo})" if data_jogo else ""
 
 col_jogo, col_placar = st.columns(2)
 
 with col_jogo:
-    card_jogo_html = f"""
-    <div class="info-card card-border-blue">
-        <div class="card-tag">📍 PRÓXIMO ENCONTRO</div>
-        <div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>
-        <div>{weather_html}</div>
-        <div class="timer-container">
-            <span>⏳ FALTAM:</span>
-            <span id="fcb-timer" class="timer-digits">Calculando...</span>
-        </div>
-    </div>
-    <script>
-        (function() {{
-            const targetDate = new Date("{iso_target}").getTime();
-            function updateTimer() {{
-                const now = new Date().getTime();
-                const distance = targetDate - now;
-                const timerElem = document.getElementById("fcb-timer");
-                if (!timerElem) return;
-
-                if (distance < 0) {{
-                    timerElem.innerHTML = "⚽ JOGO EM ANDAMENTO / REALIZADO!";
-                    return;
-                }}
-
-                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1Para criar um temporizador dinâmico e em tempo real no Streamlit sem travar a aplicação, a melhor prática é usar um componente HTML com JavaScript nativo embutido via `st.components.v1.html`. Dessa forma, o relógio faz a contagem regressiva segundo a segundo diretamente no navegador do usuário, calculando automaticamente quanto tempo falta até o próximo sábado às 16:00.
-
-Substitua a **Seção 6 (CARDS SUPERIORES)** do seu `app.py` pelo bloco abaixo:
-
-```python
-# Importe o módulo de componentes no topo do arquivo junto aos outros imports:
-import streamlit.components.v1 as components
-
-# ==========================================
-# 6. CARDS SUPERIORES (COM TEMPORIZADOR)
-# ==========================================
-df_players = load_player_stats()
-df_vitorias = load_victories_stats()
-
-vitorias_vermelho = 0
-vitorias_azul = 0
-
-try:
-    for idx, row in df_vitorias.iterrows():
-        row_str = str(row.values).lower()
-        nums = [int(val) for val in row if str(val).isdigit()]
-        if "vermelho" in row_str and nums:
-            vitorias_vermelho = nums[0]
-        elif "azul" in row_str and nums:
-            vitorias_azul = nums[0]
-except Exception:
-    pass
-
-weather_info = get_next_saturday_weather()
-
-if weather_info["status"]:
-    weather_text = f"{weather_info['condicao']} • 🌡️ {weather_info['temp']} • 🌧️ Chuva: {weather_info['pop']}"
-else:
-    weather_text = "⚽ Dia de Jogo Confirmado"
-
-data_jogo = weather_info.get('data', '')
-data_str = f" ({data_jogo})" if data_jogo else ""
-
-col_jogo, col_placar = st.columns(2)
-
-with col_jogo:
-    # Componente HTML/JS para contagem regressiva em tempo real até sábado às 16:00
-    countdown_html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <link href="[https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap)" rel="stylesheet">
-        <style>
-            body {{
-                margin: 0;
-                padding: 0;
-                background-color: transparent;
-                font-family: 'Montserrat', sans-serif;
-                color: #F1F5F9;
-            }}
-            .info-card {{
-                background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-                border: 1px solid #334155;
-                border-left: 5px solid #38BDF8;
-                border-radius: 12px;
-                padding: 16px 20px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                box-sizing: border-box;
-            }}
-            .card-tag {{
-                color: #38BDF8;
-                font-size: 11px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 1px;
-            }}
-            .card-main-text {{
-                color: #FFFFFF;
-                font-size: 15px;
-                font-weight: 700;
-                margin-top: 4px;
-            }}
-            .timer-box {{
-                display: flex;
-                gap: 8px;
-                margin-top: 10px;
-                align-items: center;
-            }}
-            .timer-unit {{
-                background: #0B1329;
-                border: 1px solid #1E3A8A;
-                border-radius: 8px;
-                padding: 4px 10px;
-                text-align: center;
-                min-width: 45px;
-            }}
-            .timer-num {{
-                font-size: 16px;
-                font-weight: 900;
-                color: #38BDF8;
-            }}
-            .timer-lbl {{
-                font-size: 9px;
-                font-weight: 700;
-                color: #94A3B8;
-                text-transform: uppercase;
-            }}
-            .weather-pill {{
-                background-color: #0F2144;
-                border: 1px solid #1E3A8A;
-                border-radius: 20px;
-                padding: 4px 12px;
-                color: #F1F5F9;
-                font-size: 12px;
-                font-weight: 700;
-                display: inline-block;
-                margin-top: 10px;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="info-card">
-            <div class="card-tag">📍 PRÓXIMO ENCONTRO</div>
-            <div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>
-            
-            <div class="timer-box">
-                <div class="timer-unit"><div class="timer-num" id="dias">00</div><div class="timer-lbl">Dias</div></div>
-                <div class="timer-unit"><div class="timer-num" id="horas">00</div><div class="timer-lbl">Horas</div></div>
-                <div class="timer-unit"><div class="timer-num" id="min">00</div><div class="timer-lbl">Min</div></div>
-                <div class="timer-unit"><div class="timer-num" id="seg">00</div><div class="timer-lbl">Seg</div></div>
-            </div>
-
-            <div class="weather-pill">{weather_text}</div>
-        </div>
-
-        <script>
-            function getNextSaturday16() {{
-                const now = new Date();
-                const target = new Date();
-                
-                let daysUntilSaturday = (5 - now.getDay() + 7) % 7;
-                
-                // Se hoje for sábado e já passou das 16:00, aponta para o próximo sábado
-                if (daysUntilSaturday === 0 && now.getHours() >= 16) {{
-                    daysUntilSaturday = 7;
-                }}
-                
-                target.setDate(now.getDate() + daysUntilSaturday);
-                target.setHours(16, 0, 0, 0);
-                return target.getTime();
-            }}
-
-            const targetTime = getNextSaturday16();
-
-            function updateTimer() {{
-                const now = new Date().getTime();
-                const diff = targetTime - now;
-
-                if (diff <= 0) {{
-                    document.getElementById("dias").innerText = "00";
-                    document.getElementById("horas").innerText = "00";
-                    document.getElementById("min").innerText = "00";
-                    document.getElementById("seg").innerText = "00";
-                    return;
-                }}
-
-                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-                document.getElementById("dias").innerText = d < 10 ? "0" + d : d;
-                document.getElementById("horas").innerText = h < 10 ? "0" + h : h;
-                document.getElementById("min").innerText = m < 10 ? "0" + m : m;
-                document.getElementById("seg").innerText = s < 10 ? "0" + s : s;
-            }}
-
-            setInterval(updateTimer, 1000);
-            updateTimer();
-        </script>
-    </body>
-    </html>
-    """
-    components.html(countdown_html, height=170)
+    card_jogo_html = (
+        f'<div class="info-card card-border-blue">'
+        f'<div class="card-tag">📍 PRÓXIMO ENCONTRO</div>'
+        f'<div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>'
+        f'<div>{weather_html}</div>'
+        f'</div>'
+    )
+    st.markdown(card_jogo_html, unsafe_allow_html=True)
 
 with col_placar:
     card_placar_html = (
-        f'<div class="info-card card-border-gold" style="height: 170px;">'
+        f'<div class="info-card card-border-gold">'
         f'<div class="card-tag-gold">🏆 PLACAR GERAL DE VITÓRIAS</div>'
-        f'<div class="scoreboard-box" style="margin-top: 20px;">'
+        f'<div class="scoreboard-box">'
         f'<span class="team-score score-red">🔴 Vermelho: {vitorias_vermelho}</span>'
         f'<span class="score-divider">X</span>'
         f'<span class="team-score score-blue">🔵 Azul: {vitorias_azul}</span>'
@@ -868,3 +643,261 @@ with col_placar:
         f'</div>'
     )
     st.markdown(card_placar_html, unsafe_allow_html=True)
+
+# ==========================================
+# 7. CARDS DE DESTAQUES RÁPIDOS
+# ==========================================
+try:
+    artilheiro = df_players.sort_values(by="Gols", ascending=False).iloc[0] if not df_players.empty else None
+    garcom = df_players.sort_values(by="Assistências", ascending=False).iloc[0] if not df_players.empty else None
+    lider_participacoes = df_players.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df_players.empty else None
+
+    c1, c2, c3, c4 = st.columns(4)
+
+    with c1:
+        total_g = df_players["Gols"].sum()
+        card_total = (
+            f'<div class="metric-card">'
+            f'<div class="metric-title">⚽ TOTAL DE GOLS</div>'
+            f'<div class="metric-value">{total_g}</div>'
+            f'<div class="metric-sub">Marcados em 2026</div>'
+            f'</div>'
+        )
+        st.markdown(card_total, unsafe_allow_html=True)
+
+    with c2:
+        if artilheiro is not None:
+            card_artilheiro = (
+                f'<div class="metric-card">'
+                f'<div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>'
+                f'<div class="metric-value gold-badge">{artilheiro["Gols"]} <span style="font-size:16px;">gols</span></div>'
+                f'<div class="metric-sub">👑 {artilheiro["Jogador"]} ({artilheiro["Time"]})</div>'
+                f'</div>'
+            )
+            st.markdown(card_artilheiro, unsafe_allow_html=True)
+
+    with c3:
+        if garcom is not None:
+            card_garcom = (
+                f'<div class="metric-card">'
+                f'<div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>'
+                f'<div class="metric-value silver-badge">{garcom["Assistências"]} <span style="font-size:16px;">ast</span></div>'
+                f'<div class="metric-sub">👟 {garcom["Jogador"]} ({garcom["Time"]})</div>'
+                f'</div>'
+            )
+            st.markdown(card_garcom, unsafe_allow_html=True)
+
+    with c4:
+        if lider_participacoes is not None:
+            card_part = (
+                f'<div class="metric-card">'
+                f'<div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>'
+                f'<div class="metric-value red-badge">{lider_participacoes["Participações em Gols"]} <span style="font-size:16px;">G+A</span></div>'
+                f'<div class="metric-sub">⚡ {lider_participacoes["Jogador"]} ({lider_participacoes["Time"]})</div>'
+                f'</div>'
+            )
+            st.markdown(card_part, unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # ==========================================
+    # 8. NAVEGAÇÃO POR PÍLULAS
+    # ==========================================
+    opcao_aba = st.radio(
+        label="",
+        options=[
+            "🏆 Classificação Geral",
+            "📅 Últimos Jogos FCB",
+            "👥 Elenco dos Times",
+            "⚔️ Duelo de Times",
+            "🏅 Top 3 Artilharia"
+        ],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # CONTEÚDO DE CADA ABA
+    if opcao_aba == "🏆 Classificação Geral":
+        st.subheader("📋 Tabela Completa de Desempenho")
+        
+        col_filtro1, col_filtro2 = st.columns([1, 2])
+        
+        with col_filtro1:
+            if "Time" in df_players.columns:
+                times_unicos = ["Todos os Times"] + sorted(list(df_players["Time"].dropna().unique()))
+                filtro_time = st.selectbox("Filtrar por Time:", times_unicos)
+            else:
+                filtro_time = "Todos os Times"
+
+        with col_filtro2:
+            busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
+
+        df_filtrado = df_players.copy()
+        if filtro_time != "Todos os Times":
+            df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
+        if busca_jogador:
+            df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
+
+        df_filtrado = df_filtrado.sort_values(by=["Gols", "Assistências", "Participações em Gols"], ascending=False)
+
+        st.dataframe(
+            df_filtrado,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "Jogador": st.column_config.TextColumn("Atleta 🏃", alignment="center"),
+                "Time": st.column_config.TextColumn("Time 👕", alignment="center"),
+                "Gols": st.column_config.NumberColumn("Gols ⚽", format="%d", alignment="center"),
+                "Assistências": st.column_config.NumberColumn("Assistências 🎯", format="%d", alignment="center"),
+                "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d", alignment="center"),
+                "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
+            }
+        )
+
+    elif opcao_aba == "📅 Últimos Jogos FCB":
+        st.subheader("📅 Resultados dos Últimos Encontros")
+        df_historico_jogos = load_match_history()
+
+        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
+
+        st.dataframe(
+            df_historico_jogos,
+            use_container_width=True,
+            hide_index=True,
+            column_config=configs_colunas
+        )
+
+    elif opcao_aba == "👥 Elenco dos Times":
+        st.subheader("👥 Elenco Oficial dos Times")
+
+        elenco_vermelho = {
+            "Goleiros": ["Vozinha"],
+            "Zagueiros": ["Nilton", "Carlão (TCR)", "Camarão Sergipano"],
+            "Laterais": ["Paulo Base", "Samuel", "Cezar", "Gledson"],
+            "Meias": ["Cassiano", "Alessandro", "Mateus Rocha", "Diego (Lucas Lima)", "Cristiano", "Manoel"],
+            "Atacantes": ["Nata", "Izaqui"]
+        }
+
+        elenco_azul = {
+            "Goleiros": ["Jonathan", "Matheus"],
+            "Zagueiros": ["Gabigol", "Wellington", "Joel"],
+            "Laterais": ["Caio", "Otero", "Cristoffer", "Jefferson"],
+            "Meias": ["Ian", "Juel", "Gabriel"],
+            "Atacantes": ["Tavinho", "P.H", "Maradona"]
+        }
+
+        col_v, col_a = st.columns(2)
+
+        icones_pos = {
+            "Goleiros": "🧤",
+            "Zagueiros": "🛡️",
+            "Laterais": "🏃‍♂️",
+            "Meias": "🧠",
+            "Atacantes": "⚡"
+        }
+
+        with col_v:
+            st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 TIME VERMELHO</h2></div>', unsafe_allow_html=True)
+            for pos, jogadores in elenco_vermelho.items():
+                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with col_a:
+            st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 TIME AZUL</h2></div>', unsafe_allow_html=True)
+            for pos, jogadores in elenco_azul.items():
+                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    elif opcao_aba == "⚔️ Duelo de Times":
+        st.subheader("⚔️ Comparativo: Time Vermelho vs Time Azul")
+        if "Time" in df_players.columns:
+            stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
+            
+            col_vermelho, col_azul = st.columns(2)
+            
+            df_v = stats_times[stats_times["Time"] == "Vermelho"]
+            df_a = stats_times[stats_times["Time"] == "Azul"]
+
+            with col_vermelho:
+                gols_v = df_v["Gols"].values[0] if not df_v.empty else 0
+                ast_v = df_v["Assistências"].values[0] if not df_v.empty else 0
+                card_v = (
+                    f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">'
+                    f'<h2 style="color: #EF4444; margin: 0;">🔴 TIME VERMELHO</h2>'
+                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_v} <span style="font-size: 20px;">GOLS</span></h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_v} Assistências Totais</p>'
+                    f'</div>'
+                )
+                st.markdown(card_v, unsafe_allow_html=True)
+
+            with col_azul:
+                gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
+                ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
+                card_a = (
+                    f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">'
+                    f'<h2 style="color: #38BDF8; margin: 0;">🔵 TIME AZUL</h2>'
+                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>'
+                    f'</div>'
+                )
+                st.markdown(card_a, unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.dataframe(stats_times, use_container_width=True, hide_index=True)
+
+    elif opcao_aba == "🏅 Top 3 Artilharia":
+        st.subheader("🏅 Pódio da Artilharia")
+        top3_gols = df_players.sort_values(by="Gols", ascending=False).head(3)
+        
+        cols_podio = st.columns(3)
+        podio_icons = ["🥇 1º Lugar", "🥈 2º Lugar", "🥉 3º Lugar"]
+        podio_colors = ["#F59E0B", "#94A3B8", "#D97706"]
+        
+        for idx, (_, row) in enumerate(top3_gols.iterrows()):
+            with cols_podio[idx]:
+                card_podio = (
+                    f'<div style="background: #0F2144; border-top: 5px solid {podio_colors[idx]}; padding: 20px; border-radius: 12px; text-align: center;">'
+                    f'<h3 style="color: {podio_colors[idx]}; margin: 0;">{podio_icons[idx]}</h3>'
+                    f'<h2 style="color: #FFF; margin: 10px 0;">{row["Jogador"]}</h2>'
+                    f'<h1 style="color: {podio_colors[idx]}; margin: 0;">{row["Gols"]} <span style="font-size: 16px;">Gols</span></h1>'
+                    f'<p style="color: #94A3B8; margin-top: 5px;">Time: {row["Time"]} | {row["Assistências"]} Assistências</p>'
+                    f'</div>'
+                )
+                st.markdown(card_podio, unsafe_allow_html=True)
+
+    # ==========================================
+    # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
+    # ==========================================
+    entradas = "R$ 0,00"
+    saidas = "R$ 0,00"
+    saldo_caixa = "R$ 0,00"
+
+    card_financeiro_html = f"""
+    <div class="financial-card">
+        <div class="financial-title">💰 PAINEL FINANCEIRO DO CLUBE</div>
+        <div class="fin-summary-box">
+            <div class="fin-item">
+                <div class="fin-label">📈 Entradas (Mensalidades / Arrecadações)</div>
+                <div class="fin-value-green">{entradas}</div>
+            </div>
+            <div class="fin-item">
+                <div class="fin-label">📉 Saídas (Campo / Bolas / Coletes)</div>
+                <div class="fin-value-red">{saidas}</div>
+            </div>
+            <div class="fin-item">
+                <div class="fin-label">💵 Saldo Atual em Caixa</div>
+                <div class="fin-value-blue">{saldo_caixa}</div>
+            </div>
+        </div>
+    </div>
+    """
+    st.markdown(textwrap.dedent(card_financeiro_html), unsafe_allow_html=True)
+
+except Exception as e:
+    st.error(f"Erro ao carregar dados das planilhas: {e}")
