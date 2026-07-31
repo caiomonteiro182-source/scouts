@@ -273,7 +273,7 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ABAS DE NAVEGAÇÃO
-    aba1, aba2, aba3 = st.tabs(["🏆 Classificação Geral", "⚔️ Duelo de Coletes (Times)", "🏅 Top 3 Artilharia"])
+    aba1, aba2, aba3 = st.tabs(["🏆 Classificação", "⚔️ Duelo Times", "🏅 Top 3 Artilharia"])
 
     with aba1:
         st.subheader("📋 Tabela Completa de Desempenho")
