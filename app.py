@@ -112,9 +112,7 @@ CUSTOM_CSS = """
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
 
-    /* ==========================================
-       ESTILO DAS PÍLULAS / CÍRCULOS DE NAVEGAÇÃO
-       ========================================== */
+    /* ESTILO DAS PÍLULAS / CÍRCULOS DE NAVEGAÇÃO */
     div[data-testid="stRadio"] > div {
         background-color: #0F172A;
         padding: 8px 12px;
@@ -142,7 +140,7 @@ CUSTOM_CSS = """
         background-color: rgba(200, 16, 46, 0.2) !important;
     }
 
-    /* Pílula Selecionada (Arredondada/Círculo) */
+    /* Pílula Selecionada */
     div[data-testid="stRadio"] label[data-checked="true"] {
         background: linear-gradient(90deg, #C8102E 0%, #990B20 100%) !important;
         color: #FFFFFF !important;
@@ -294,7 +292,7 @@ try:
     # ==========================================
     opcao_aba = st.radio(
         label="",
-        options=["🏆 Classificação Geral", "⚔️ Duelo de Coletes", "🏅 Top 3 Artilharia"],
+        options=["🏆 Classificação Geral", "⚔️ Duelo de Times", "🏅 Top 3 Artilharia"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -309,16 +307,16 @@ try:
         
         with col_filtro1:
             if "Time" in df.columns:
-                times_unicos = ["Todos os Coletes"] + sorted(list(df["Time"].dropna().unique()))
-                filtro_time = st.selectbox("Filtrar por Colete:", times_unicos)
+                times_unicos = ["Todos os Times"] + sorted(list(df["Time"].dropna().unique()))
+                filtro_time = st.selectbox("Filtrar por Time:", times_unicos)
             else:
-                filtro_time = "Todos os Coletes"
+                filtro_time = "Todos os Times"
 
         with col_filtro2:
             busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
 
         df_filtrado = df.copy()
-        if filtro_time != "Todos os Coletes":
+        if filtro_time != "Todos os Times":
             df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
         if busca_jogador:
             df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
@@ -331,7 +329,7 @@ try:
             hide_index=True,
             column_config={
                 "Jogador": st.column_config.TextColumn("Atleta 🏃"),
-                "Time": st.column_config.TextColumn("Colete 👕"),
+                "Time": st.column_config.TextColumn("Time 👕"),
                 "Gols": st.column_config.NumberColumn("Gols ⚽", format="%d"),
                 "Assistências": st.column_config.NumberColumn("Assistências 🎯", format="%d"),
                 "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d"),
@@ -339,8 +337,8 @@ try:
             }
         )
 
-    elif opcao_aba == "⚔️ Duelo de Coletes":
-        st.subheader("⚔️ Comparativo: Colete Vermelho vs Colete Azul")
+    elif opcao_aba == "⚔️ Duelo de Times":
+        st.subheader("⚔️ Comparativo: Time Vermelho vs Time Azul")
         if "Time" in df.columns:
             stats_times = df.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
             
@@ -354,7 +352,7 @@ try:
                 ast_v = df_v["Assistências"].values[0] if not df_v.empty else 0
                 st.markdown(f"""
                     <div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">
-                        <h2 style="color: #EF4444; margin: 0;">🔴 COLETE VERMELHO</h2>
+                        <h2 style="color: #EF4444; margin: 0;">🔴 TIME VERMELHO</h2>
                         <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_v} <span style="font-size: 20px;">GOLS</span></h1>
                         <p style="color: #CBD5E1; font-weight: 600;">{ast_v} Assistências Totais</p>
                     </div>
@@ -365,7 +363,7 @@ try:
                 ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
                 st.markdown(f"""
                     <div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">
-                        <h2 style="color: #38BDF8; margin: 0;">🔵 COLETE AZUL</h2>
+                        <h2 style="color: #38BDF8; margin: 0;">🔵 TIME AZUL</h2>
                         <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>
                         <p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>
                     </div>
