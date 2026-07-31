@@ -268,8 +268,7 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 # ==========================================
 # 1. Planilha de Gols e Assistências
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
-GID_STATS = "1092123094"
-URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv&gid={GID_STATS}"
+URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
 
 # 2. Planilha de Vitórias dos Times
 ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
@@ -295,20 +294,21 @@ def load_player_stats():
 
 @st.cache_data(ttl=0)
 def load_victories_stats():
-    """Carrega o placar de vitórias por time."""
+    """Carrega o placar de vitórias por time da planilha dedicada."""
     try:
         df_vic = pd.read_csv(URL_VITORIAS)
         df_vic.columns = df_vic.columns.str.strip()
         return df_vic
     except Exception:
-        # Tenta sem parâmetros extras caso a estrutura seja direta
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv")
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
+    """Calcula dinamicamente o próximo sábado e busca o clima correspondente."""
     try:
         today = datetime.now()
         days_until_saturday = (5 - today.weekday()) % 7
+        
         if days_until_saturday == 0 and today.hour >= 18:
             days_until_saturday = 7
         
@@ -384,25 +384,18 @@ st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
 
-# Processamento do Placar de Vitórias a partir da Planilha Dedicada
+# Extração automática das vitórias de cada time da segunda planilha
 vitorias_vermelho = 0
 vitorias_azul = 0
 
 try:
-    cols_v = [c.lower() for c in df_vitorias.columns]
-    
-    # Busca dinamicamente os totais de vitórias de cada time na planilha
     for idx, row in df_vitorias.iterrows():
         row_str = str(row.values).lower()
-        if "vermelho" in row_str:
-            # Procura o primeiro valor numérico presente na linha
-            nums = [int(val) for val in row if str(val).isdigit()]
-            if nums:
-                vitorias_vermelho = nums[0]
-        elif "azul" in row_str:
-            nums = [int(val) for val in row if str(val).isdigit()]
-            if nums:
-                vitorias_azul = nums[0]
+        nums = [int(val) for val in row if str(val).isdigit()]
+        if "vermelho" in row_str and nums:
+            vitorias_vermelho = nums[0]
+        elif "azul" in row_str and nums:
+            vitorias_azul = nums[0]
 except Exception:
     pass
 
@@ -413,7 +406,7 @@ if weather_info["status"]:
         f'<div class="weather-pill">'
         f'<span>{weather_info["condicao"]}</span> • '
         f'<span>🌡️ {weather_info["temp"]}</span> • '
-        f'<span>🌧️ Chuva: <b>{weather_info["pop"]}</b></span>'
+        f'<span>🌧️ Chance de Chuva: <b>{weather_info["pop"]}</b></span>'
         f'</div>'
     )
 else:
