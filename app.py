@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ==========================================
-# 2. ESTILIZAÇÃO CSS PERSONALIZADA (FCB THEME)
+# 2. ESTILIZAÇÃO CSS PERSONALIZADA (FCB THEME RESPONSIVO)
 # ==========================================
 CUSTOM_CSS = """
 <style>
@@ -88,7 +88,7 @@ CUSTOM_CSS = """
         text-align: center !important;
     }
 
-    /* Banner do Cabeçalho Oficial */
+    /* Banner do Cabeçalho Oficial (Computador) */
     .header-container {
         background: linear-gradient(135deg, #0B1B3D 0%, #152844 60%, #C8102E 100%);
         padding: 25px 40px;
@@ -120,6 +120,36 @@ CUSTOM_CSS = """
         margin: 8px 0 0 0;
         text-transform: uppercase;
         letter-spacing: 1.5px;
+    }
+
+    /* AJUSTES RESPONSIVOS PARA CELULARES (MOBILE) */
+    @media (max-width: 768px) {
+        .header-container {
+            flex-direction: column !important;
+            text-align: center !important;
+            padding: 20px 15px !important;
+            gap: 12px !important;
+            border-left: none !important;
+            border-top: 5px solid #C8102E !important;
+        }
+
+        .header-container img {
+            height: 110px !important;
+        }
+
+        .header-title {
+            font-size: 24px !important;
+            letter-spacing: 1px !important;
+        }
+
+        .header-subtitle {
+            font-size: 11px !important;
+            letter-spacing: 1px !important;
+        }
+
+        .info-card {
+            padding: 15px !important;
+        }
     }
 
     /* Cards Informativos Topo */
@@ -316,7 +346,7 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. TICKER DESLIZANTE DO BRASILEIRÃO (RESULTADOS RECENTES OFICIAIS)
+# 3. TICKER DESLIZANTE DO BRASILEIRÃO
 # ==========================================
 @st.cache_data(ttl=1800)
 def get_brasileirao_results():
@@ -344,7 +374,6 @@ def get_brasileirao_results():
     except Exception:
         pass
 
-    # Dados reais da última rodada do Brasileirão Série A
     return [
         "Vitória 0 x 4 Palmeiras",
         "Coritiba 0 x 1 Cruzeiro",
@@ -372,18 +401,15 @@ st.markdown(ticker_html, unsafe_allow_html=True)
 # ==========================================
 # 4. CARREGAMENTO DAS DUAS PLANILHAS E CLIMA
 # ==========================================
-# 1. Planilha de Gols e Assistências
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
 
-# 2. Planilha de Vitórias dos Times
 ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
 GID_VITORIAS = "1092123094"
 URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv&gid={GID_VITORIAS}"
 
 @st.cache_data(ttl=0)
 def load_player_stats():
-    """Carrega as estatísticas dos jogadores (Gols, Assistências)."""
     df = pd.read_csv(URL_STATS, header=3)
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
@@ -400,7 +426,6 @@ def load_player_stats():
 
 @st.cache_data(ttl=0)
 def load_victories_stats():
-    """Carrega o placar de vitórias por time da planilha dedicada."""
     try:
         df_vic = pd.read_csv(URL_VITORIAS)
         df_vic.columns = df_vic.columns.str.strip()
@@ -410,7 +435,6 @@ def load_victories_stats():
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
-    """Calcula dinamicamente o próximo sábado e busca o clima correspondente."""
     try:
         today = datetime.now()
         days_until_saturday = (5 - today.weekday()) % 7
@@ -485,12 +509,11 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS SUPERIORES (PRÓXIMO JOGO & PLACAR DE VITÓRIAS)
+# 6. CARDS SUPERIORES
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
 
-# Extração automática das vitórias de cada time da segunda planilha
 vitorias_vermelho = 0
 vitorias_azul = 0
 
