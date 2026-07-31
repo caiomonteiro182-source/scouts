@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 import os
 import base64
@@ -461,7 +460,7 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS QUATRO PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS TRÊS PLANILHAS E CLIMA
 # ==========================================
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
@@ -473,10 +472,6 @@ URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/e
 ID_PLANILHA_JOGOS = "1Chjvd4vBarn9O4EgXWFnyMe5uIBgUsa4QCHIRr8C6Tk"
 GID_JOGOS = "1092123094"
 URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv&gid={GID_JOGOS}"
-
-ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
-GID_FINANCEIRO = "1092123094"
-URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
 
 @st.cache_data(ttl=0)
 def load_player_stats():
@@ -512,15 +507,6 @@ def load_match_history():
         return df_jogos
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
-
-@st.cache_data(ttl=0)
-def load_financial_stats():
-    try:
-        df_fin = pd.read_csv(URL_FINANCEIRO)
-        df_fin.columns = df_fin.columns.str.strip()
-        return df_fin
-    except Exception:
-        return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
@@ -598,7 +584,7 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS SUPERIORES COM TEMPORIZADOR AO VIVO (DIAS, HORAS E MINUTOS)
+# 6. CARDS SUPERIORES COM TEMPORIZADOR LIMPO
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
@@ -630,13 +616,30 @@ if weather_info["status"]:
 else:
     weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
 
+# CÁLCULO NATIVO DO TEMPORIZADOR (PYTHON)
 agora = datetime.now()
 dias_ate_sabado = (5 - agora.weekday()) % 7
 if dias_ate_sabado == 0 and agora.hour >= 16:
     dias_ate_sabado = 7
 
 proximo_jogo = (agora + timedelta(days=dias_ate_sabado)).replace(hour=16, minute=0, second=0, microsecond=0)
-target_date_str = proximo_jogo.isoformat()
+tempo_restante = proximo_jogo - agora
+
+dias = tempo_restante.days
+horas, rem = divmod(tempo_restante.seconds, 3600)
+minutos, segundos = divmod(rem, 60)
+
+timer_html = (
+    f'<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; justify-content: center;">'
+    f'<span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>'
+    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
+    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{dias:02d}d</span></div>'
+    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
+    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{horas:02d}h</span></div>'
+    f'<div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">'
+    f'<span style="font-size: 13px; font-weight: 900; color: #FFF;">{minutos:02d}m</span></div>'
+    f'</div>'
+)
 
 data_jogo = weather_info.get('data', '')
 data_str = f" ({data_jogo})" if data_jogo else ""
@@ -644,47 +647,15 @@ data_str = f" ({data_jogo})" if data_jogo else ""
 col_jogo, col_placar = st.columns(2)
 
 with col_jogo:
-    card_jogo_html = f"""
-    <div class="info-card card-border-blue" style="align-items: center; text-align: center;">
-        <div class="card-tag">📍 PRÓXIMO ENCONTRO</div>
-        <div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>
-        <div>{weather_html}</div>
-        <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; justify-content: center;">
-            <span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>
-            <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-                <span id="timer-days" style="font-size: 13px; font-weight: 900; color: #FFF;">--d</span>
-            </div>
-            <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-                <span id="timer-hours" style="font-size: 13px; font-weight: 900; color: #FFF;">--h</span>
-            </div>
-            <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-                <span id="timer-minutes" style="font-size: 13px; font-weight: 900; color: #FFF;">--m</span>
-            </div>
-        </div>
-    </div>
-    <script>
-        const countDownDate = new Date("{target_date_str}").getTime();
-        function updateTimer() {{
-            const now = new Date().getTime();
-            const distance = countDownDate - now;
-            if (distance < 0) return;
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            
-            const d = document.getElementById("timer-days");
-            if(d) d.innerText = String(days).padStart(2, "0") + "d";
-            const h = document.getElementById("timer-hours");
-            if(h) h.innerText = String(hours).padStart(2, "0") + "h";
-            const m = document.getElementById("timer-minutes");
-            if(m) m.innerText = String(minutes).padStart(2, "0") + "m";
-        }}
-        updateTimer();
-        setInterval(updateTimer, 1000);
-    </script>
-    """
-    # Altura alterada de 145 para 180 para o card reaparecer por completo
-    components.html(card_jogo_html, height=180, scrolling=False)
+    card_jogo_html = (
+        f'<div class="info-card card-border-blue" style="align-items: center; text-align: center;">'
+        f'<div class="card-tag">📍 PRÓXIMO ENCONTRO</div>'
+        f'<div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>'
+        f'<div>{weather_html}</div>'
+        f'{timer_html}'
+        f'</div>'
+    )
+    st.markdown(card_jogo_html, unsafe_allow_html=True)
 
 with col_placar:
     card_placar_html = (
@@ -929,64 +900,20 @@ try:
     # ==========================================
     # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
     # ==========================================
-    df_financeiro = load_financial_stats()
-
-    entradas_val = 0.0
-    saidas_val = 0.0
-    saldo_caixa_val = 0.0
-
-    try:
-        if not df_financeiro.empty:
-            for idx, row in df_financeiro.iterrows():
-                row_str = str(row.values).lower()
-                
-                def extract_money(linha):
-                    for val in linha:
-                        if pd.isna(val): continue
-                        v_str = str(val).lower().strip()
-                        if any(w in v_str for w in ['entrada', 'saida', 'saída', 'saldo', 'caixa', 'receita', 'despesa']):
-                            continue
-                        
-                        v_str = v_str.replace('r$', '').replace(' ', '')
-                        if ',' in v_str:
-                            v_str = v_str.replace('.', '').replace(',', '.')
-                            
-                        try:
-                            return float(v_str)
-                        except ValueError:
-                            continue
-                    return 0.0
-
-                if "entrada" in row_str or "arrecada" in row_str or "receita" in row_str:
-                    entradas_val += extract_money(row.values)
-                elif "saída" in row_str or "saida" in row_str or "gasto" in row_str or "despesa" in row_str:
-                    saidas_val += extract_money(row.values)
-                elif "saldo" in row_str or "caixa" in row_str:
-                    saldo_caixa_val = extract_money(row.values)
-
-            if saldo_caixa_val == 0.0 and (entradas_val > 0 or saidas_val > 0):
-                saldo_caixa_val = entradas_val - saidas_val
-
-    except Exception:
-        pass
-
-    def format_brl(valor):
-        return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-
-    entradas = format_brl(entradas_val)
-    saidas = format_brl(saidas_val)
-    saldo_caixa = format_brl(saldo_caixa_val)
+    entradas = "R$ 0,00"
+    saidas = "R$ 0,00"
+    saldo_caixa = "R$ 0,00"
 
     card_financeiro_html = f"""
     <div class="financial-card">
         <div class="financial-title">💰 PAINEL FINANCEIRO DO CLUBE</div>
         <div class="fin-summary-box">
             <div class="fin-item">
-                <div class="fin-label">📈 Entradas Totais (Mensalidades / Arrecadações)</div>
+                <div class="fin-label">📈 Entradas (Mensalidades / Arrecadações)</div>
                 <div class="fin-value-green">{entradas}</div>
             </div>
             <div class="fin-item">
-                <div class="fin-label">📉 Saídas Totais (Campo / Bolas / Coletes)</div>
+                <div class="fin-label">📉 Saídas (Campo / Bolas / Coletes)</div>
                 <div class="fin-value-red">{saidas}</div>
             </div>
             <div class="fin-item">
