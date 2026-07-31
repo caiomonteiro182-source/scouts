@@ -38,36 +38,38 @@ CUSTOM_CSS = """
         color: #F1F5F9;
     }
 
-    /* Banner do Cabeçalho Oficial */
+    /* Banner do Cabeçalho Oficial (Centralizado) */
     .header-container {
         background: linear-gradient(135deg, #0B1B3D 0%, #152844 60%, #C8102E 100%);
-        padding: 20px 30px;
+        padding: 25px 40px;
         border-radius: 15px;
         box-shadow: 0 8px 24px rgba(200, 16, 46, 0.25);
         display: flex;
         align-items: center;
-        gap: 25px;
+        justify-content: center;
+        gap: 35px;
         margin-bottom: 25px;
         border-left: 6px solid #C8102E;
+        text-align: left;
     }
 
     .header-title {
         color: #FFFFFF;
-        font-size: 32px;
+        font-size: 38px;
         font-weight: 900;
         margin: 0;
-        letter-spacing: 1.5px;
+        letter-spacing: 2px;
         text-transform: uppercase;
         line-height: 1.1;
     }
 
     .header-subtitle {
         color: #CBD5E1;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
-        margin: 6px 0 0 0;
+        margin: 8px 0 0 0;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
     }
 
     /* Cards de Métricas e Destaques */
@@ -238,13 +240,13 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 # ==========================================
-# 4. CABEÇALHO OFICIAL
+# 4. CABEÇALHO OFICIAL (COM LOGO MAIOR E CONTEÚDO CENTRALIZADO)
 # ==========================================
 try:
     logo_base64 = get_base64_of_bin_file("logo.png")
-    logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 100px; width: auto; object-fit: contain;">'
+    logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 140px; width: auto; object-fit: contain;">'
 except:
-    logo_html = '<h1 style="margin:0; font-size: 50px;">🛡️</h1>'
+    logo_html = '<h1 style="margin:0; font-size: 70px;">🛡️</h1>'
 
 st.markdown(f"""
     <div class="header-container">
