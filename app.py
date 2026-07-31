@@ -150,6 +150,11 @@ CUSTOM_CSS = """
         .info-card {
             padding: 15px !important;
         }
+
+        .fin-summary-box {
+            flex-direction: column !important;
+            gap: 15px !important;
+        }
     }
 
     /* Cards Informativos Topo */
@@ -341,6 +346,63 @@ CUSTOM_CSS = """
         margin: 3px 2px;
         border: 1px solid #334155;
     }
+
+    /* Card Financeiro Rodapé */
+    .financial-card {
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+        border: 1px solid #334155;
+        border-top: 4px solid #10B981;
+        border-radius: 15px;
+        padding: 25px;
+        margin-top: 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    .financial-title {
+        color: #10B981;
+        font-size: 14px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .fin-summary-box {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        background-color: #070D18;
+        padding: 18px;
+        border-radius: 12px;
+        border: 1px solid #1E293B;
+    }
+    .fin-item {
+        text-align: center;
+    }
+    .fin-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #94A3B8;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+    .fin-value-green {
+        font-size: 24px;
+        font-weight: 900;
+        color: #10B981;
+    }
+    .fin-value-red {
+        font-size: 24px;
+        font-weight: 900;
+        color: #EF4444;
+    }
+    .fin-value-blue {
+        font-size: 26px;
+        font-weight: 900;
+        color: #38BDF8;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -398,25 +460,21 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS TÊS PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS TRÊS PLANILHAS E CLIMA
 # ==========================================
-# 1. Planilha de Gols e Assistências
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
 
-# 2. Planilha de Vitórias dos Times
 ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
 GID_VITORIAS = "1092123094"
 URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv&gid={GID_VITORIAS}"
 
-# 3. Planilha de Resultados dos Útimos Jogos FCB
 ID_PLANILHA_JOGOS = "1Chjvd4vBarn9O4EgXWFnyMe5uIBgUsa4QCHIRr8C6Tk"
 GID_JOGOS = "1092123094"
 URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv&gid={GID_JOGOS}"
 
 @st.cache_data(ttl=0)
 def load_player_stats():
-    """Planilha 1: Estatísticas dos jogadores."""
     df = pd.read_csv(URL_STATS, header=3)
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
@@ -433,7 +491,6 @@ def load_player_stats():
 
 @st.cache_data(ttl=0)
 def load_victories_stats():
-    """Planilha 2: Placar geral de vitórias."""
     try:
         df_vic = pd.read_csv(URL_VITORIAS)
         df_vic.columns = df_vic.columns.str.strip()
@@ -443,7 +500,6 @@ def load_victories_stats():
 
 @st.cache_data(ttl=0)
 def load_match_history():
-    """Planilha 3: Histórico e resultados dos últimos jogos FCB."""
     try:
         df_jogos = pd.read_csv(URL_JOGOS)
         df_jogos = df_jogos.dropna(how='all')
@@ -645,13 +701,13 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ==========================================
-    # 8. NAVEGAÇÃO POR PÍLULAS (INCLUI NOVA ABA DOS ÚLTIMOS JOGOS)
+    # 8. NAVEGAÇÃO POR PÍLULAS
     # ==========================================
     opcao_aba = st.radio(
         label="",
         options=[
-            "🏆 Classificação Geral",
             "📅 Últimos Jogos FCB",
+            "🏆 Classificação Geral",
             "👥 Elenco dos Times",
             "⚔️ Duelo de Times",
             "🏅 Top 3 Artilharia"
@@ -663,7 +719,20 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # CONTEÚDO DE CADA ABA
-    if opcao_aba == "🏆 Classificação Geral":
+    if opcao_aba == "📅 Últimos Jogos FCB":
+        st.subheader("📅 Resultados dos Últimos Encontros")
+        df_historico_jogos = load_match_history()
+
+        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
+
+        st.dataframe(
+            df_historico_jogos,
+            use_container_width=True,
+            hide_index=True,
+            column_config=configs_colunas
+        )
+
+    elif opcao_aba == "🏆 Classificação Geral":
         st.subheader("📋 Tabela Completa de Desempenho")
         
         col_filtro1, col_filtro2 = st.columns([1, 2])
@@ -698,20 +767,6 @@ try:
                 "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d", alignment="center"),
                 "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
             }
-        )
-
-    elif opcao_aba == "📅 Últimos Jogos FCB":
-        st.subheader("📅 Resultados dos Últimos Encontros")
-        df_historico_jogos = load_match_history()
-
-        # Configuração de alinhamento para todas as colunas da 3ª planilha
-        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
-
-        st.dataframe(
-            df_historico_jogos,
-            use_container_width=True,
-            hide_index=True,
-            column_config=configs_colunas
         )
 
     elif opcao_aba == "👥 Elenco dos Times":
@@ -815,6 +870,35 @@ try:
                     f'</div>'
                 )
                 st.markdown(card_podio, unsafe_allow_html=True)
+
+    # ==========================================
+    # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
+    # ==========================================
+    # Variáveis prontas para integração futura (coloque aqui os dados reais depois):
+    entradas = "R$ 0,00"
+    saidas = "R$ 0,00"
+    saldo_caixa = "R$ 0,00"
+
+    card_financeiro_html = f"""
+    <div class="financial-card">
+        <div class="financial-title">💰 PAINEL FINANCEIRO DO CLUBE</div>
+        <div class="fin-summary-box">
+            <div class="fin-item">
+                <div class="fin-label">📈 Entradas (Mensalidades / Arrecadações)</div>
+                <div class="fin-value-green">{entradas}</div>
+            </div>
+            <div class="fin-item">
+                <div class="fin-label">📉 Saídas (Campo / Bolas / Coletes)</div>
+                <div class="fin-value-red">{saidas}</div>
+            </div>
+            <div class="fin-item">
+                <div class="fin-label">💵 Saldo Atual em Caixa</div>
+                <div class="fin-value-blue">{saldo_caixa}</div>
+            </div>
+        </div>
+    </div>
+    """
+    st.markdown(textwrap.dedent(card_financeiro_html), unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Erro ao carregar dados das planilhas: {e}")
