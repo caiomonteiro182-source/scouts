@@ -683,7 +683,8 @@ with col_jogo:
         setInterval(updateTimer, 1000);
     </script>
     """
-    components.html(card_jogo_html, height=145, scrolling=False)
+    # Altura alterada de 145 para 180 para o card reaparecer por completo
+    components.html(card_jogo_html, height=180, scrolling=False)
 
 with col_placar:
     card_placar_html = (
