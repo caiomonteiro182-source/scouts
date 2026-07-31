@@ -152,24 +152,6 @@ CUSTOM_CSS = """
         display: none !important;
     }
 
-    /* Botão Vermelho Oficial FCB */
-    .stButton>button {
-        background: linear-gradient(90deg, #C8102E 0%, #990B20 100%);
-        color: white;
-        font-weight: 700;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(200, 16, 46, 0.3);
-        width: 100%;
-        transition: all 0.3s;
-    }
-
-    .stButton>button:hover {
-        background: linear-gradient(90deg, #E11D48 0%, #C8102E 100%);
-        box-shadow: 0 6px 18px rgba(225, 29, 72, 0.5);
-    }
-
     /* ESTILO PARA OS CARDS DO ELENCO */
     .roster-card {
         background-color: #0F172A;
@@ -256,7 +238,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 # ==========================================
-# 4. CABEÇALHO OFICIAL + BOTÃO ATUALIZAR
+# 4. CABEÇALHO OFICIAL
 # ==========================================
 try:
     logo_base64 = get_base64_of_bin_file("logo.png")
@@ -264,27 +246,17 @@ try:
 except:
     logo_html = '<h1 style="margin:0; font-size: 50px;">🛡️</h1>'
 
-col_header, col_btn = st.columns([5, 1], vertical_alignment="center")
-
-with col_header:
-    st.markdown(f"""
-        <div class="header-container" style="margin-bottom: 0;">
-            <div>
-                {logo_html}
-            </div>
-            <div>
-                <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
-                <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
-            </div>
+st.markdown(f"""
+    <div class="header-container">
+        <div>
+            {logo_html}
         </div>
-    """, unsafe_allow_html=True)
-
-with col_btn:
-    if st.button("🔄 Atualizar Estatísticas"):
-        st.cache_data.clear()
-        st.rerun()
-
-st.markdown("<br>", unsafe_allow_html=True)
+        <div>
+            <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
+            <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 # ==========================================
 # 5. CONTEÚDO PRINCIPAL
