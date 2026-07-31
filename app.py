@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import base64
 import requests
+import textwrap
 from datetime import datetime, timedelta
 
 # ==========================================
@@ -285,7 +286,6 @@ def get_next_saturday_weather():
     """Busca o clima de Cambé - PR para o próximo sábado às 16:00."""
     try:
         today = datetime.now()
-        # Calcula os dias até o próximo sábado (5 representa o sábado)
         days_until_saturday = (5 - today.weekday()) % 7
         if days_until_saturday == 0 and today.hour >= 18:
             days_until_saturday = 7
@@ -309,11 +309,10 @@ def get_next_saturday_weather():
             pop = hourly["precipitation_probability"][idx]
             wcode = hourly["weather_code"][idx]
 
-            # Ícones de clima simples por código
             if wcode == 0:
                 icon = "☀️ Céu Limpo"
             elif wcode in [1, 2, 3]:
-                icon = "Partly Cloudy" if wcode == 2 else ("⛅ Parcialmente Nublado" if wcode == 1 else "☁️ Nublado")
+                icon = "⛅ Parcialmente Nublado" if wcode in [1, 2] else "☁️ Nublado"
             elif wcode in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
                 icon = "🌧️ Chuva"
             elif wcode in [95, 96, 99]:
@@ -347,17 +346,18 @@ try:
 except:
     logo_html = '<h1 style="margin:0; font-size: 70px;">🛡️</h1>'
 
-st.markdown(f"""
-    <div class="header-container">
-        <div>
-            {logo_html}
-        </div>
-        <div>
-            <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
-            <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
-        </div>
+header_code = f"""
+<div class="header-container">
+    <div>
+        {logo_html}
     </div>
-""", unsafe_allow_html=True)
+    <div>
+        <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
+        <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
+    </div>
+</div>
+"""
+st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
 # 5. CARD DE PRÓXIMA PARTIDA E CLIMA
@@ -366,26 +366,27 @@ weather_info = get_next_saturday_weather()
 
 if weather_info["status"]:
     weather_html = f"""
-        <div class="weather-pill">
-            <span>{weather_info['condicao']}</span> • 
-            <span>🌡️ {weather_info['temp']}</span> • 
-            <span>🌧️ Chance de Chuva: <b>{weather_info['pop']}</b></span>
-        </div>
+    <div class="weather-pill">
+        <span>{weather_info['condicao']}</span> • 
+        <span>🌡️ {weather_info['temp']}</span> • 
+        <span>🌧️ Chance de Chuva: <b>{weather_info['pop']}</b></span>
+    </div>
     """
 else:
     weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
 
-st.markdown(f"""
-    <div class="match-info-card">
-        <div>
-            <div class="match-info-title">📍 PRÓXIMO CONCONTRO</div>
-            <div class="match-info-detail">Sábado ({weather_info.get('data', 'Semana')}) às 16:00 • Cambé - PR</div>
-        </div>
-        <div>
-            {weather_html}
-        </div>
+match_card_code = f"""
+<div class="match-info-card">
+    <div>
+        <div class="match-info-title">📍 PRÓXIMO ENCONTRO</div>
+        <div class="match-info-detail">Sábado ({weather_info.get('data', 'Semana')}) às 16:00 • Cambé - PR</div>
     </div>
-""", unsafe_allow_html=True)
+    <div>
+        {weather_html}
+    </div>
+</div>
+"""
+st.markdown(textwrap.dedent(match_card_code), unsafe_allow_html=True)
 
 # ==========================================
 # 6. CONTEÚDO PRINCIPAL
@@ -402,43 +403,47 @@ try:
 
     with c1:
         total_g = df["Gols"].sum()
-        st.markdown(f"""
-            <div class="metric-card">
-                <div class="metric-title">⚽ TOTAL DE GOLS</div>
-                <div class="metric-value">{total_g}</div>
-                <div class="metric-sub">Marcados em 2026</div>
-            </div>
-        """, unsafe_allow_html=True)
+        card_total = f"""
+        <div class="metric-card">
+            <div class="metric-title">⚽ TOTAL DE GOLS</div>
+            <div class="metric-value">{total_g}</div>
+            <div class="metric-sub">Marcados em 2026</div>
+        </div>
+        """
+        st.markdown(textwrap.dedent(card_total), unsafe_allow_html=True)
 
     with c2:
         if artilheiro is not None:
-            st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>
-                    <div class="metric-value gold-badge">{artilheiro['Gols']} <span style="font-size:16px;">gols</span></div>
-                    <div class="metric-sub">👑 {artilheiro['Jogador']} ({artilheiro['Time']})</div>
-                </div>
-            """, unsafe_allow_html=True)
+            card_artilheiro = f"""
+            <div class="metric-card">
+                <div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>
+                <div class="metric-value gold-badge">{artilheiro['Gols']} <span style="font-size:16px;">gols</span></div>
+                <div class="metric-sub">👑 {artilheiro['Jogador']} ({artilheiro['Time']})</div>
+            </div>
+            """
+            st.markdown(textwrap.dedent(card_artilheiro), unsafe_allow_html=True)
 
     with c3:
         if garcom is not None:
-            st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>
-                    <div class="metric-value silver-badge">{garcom['Assistências']} <span style="font-size:16px;">ast</span></div>
-                    <div class="metric-sub">👟 {garcom['Jogador']} ({garcom['Time']})</div>
-                </div>
-            """, unsafe_allow_html=True)
+            card_garcom = f"""
+            <div class="metric-card">
+                <div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>
+                <div class="metric-value silver-badge">{garcom['Assistências']} <span style="font-size:16px;">ast</span></div>
+                <div class="metric-sub">👟 {garcom['Jogador']} ({garcom['Time']})</div>
+            </div>
+            """
+            st.markdown(textwrap.dedent(card_garcom), unsafe_allow_html=True)
 
     with c4:
         if lider_participacoes is not None:
-            st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>
-                    <div class="metric-value red-badge">{lider_participacoes['Participações em Gols']} <span style="font-size:16px;">G+A</span></div>
-                    <div class="metric-sub">⚡ {lider_participacoes['Jogador']} ({lider_participacoes['Time']})</div>
-                </div>
-            """, unsafe_allow_html=True)
+            card_part = f"""
+            <div class="metric-card">
+                <div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>
+                <div class="metric-value red-badge">{lider_participacoes['Participações em Gols']} <span style="font-size:16px;">G+A</span></div>
+                <div class="metric-sub">⚡ {lider_participacoes['Jogador']} ({lider_participacoes['Time']})</div>
+            </div>
+            """
+            st.markdown(textwrap.dedent(card_part), unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -514,44 +519,30 @@ try:
 
         col_v, col_a = st.columns(2)
 
+        icones_pos = {
+            "Goleiros": "🧤",
+            "Zagueiros": "🛡️",
+            "Laterais": "🏃‍♂️",
+            "Meias": "🧠",
+            "Atacantes": "⚡"
+        }
+
         # TIME VERMELHO
         with col_v:
-            st.markdown("""
-                <div class="roster-card">
-                    <div class="roster-header-vermelho">
-                        <h2>🔴 TIME VERMELHO</h2>
-                    </div>
-            """, unsafe_allow_html=True)
-            
-            icones_pos = {
-                "Goleiros": "🧤",
-                "Zagueiros": "🛡️",
-                "Laterais": "🏃‍♂️",
-                "Meias": "🧠",
-                "Atacantes": "⚡"
-            }
-
+            st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 TIME VERMELHO</h2></div>', unsafe_allow_html=True)
             for pos, jogadores in elenco_vermelho.items():
                 st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
                 pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
                 st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
-            
             st.markdown("</div>", unsafe_allow_html=True)
 
         # TIME AZUL
         with col_a:
-            st.markdown("""
-                <div class="roster-card">
-                    <div class="roster-header-azul">
-                        <h2>🔵 TIME AZUL</h2>
-                    </div>
-            """, unsafe_allow_html=True)
-
+            st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 TIME AZUL</h2></div>', unsafe_allow_html=True)
             for pos, jogadores in elenco_azul.items():
                 st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
                 pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
                 st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
-            
             st.markdown("</div>", unsafe_allow_html=True)
 
     elif opcao_aba == "⚔️ Duelo de Times":
@@ -567,24 +558,26 @@ try:
             with col_vermelho:
                 gols_v = df_v["Gols"].values[0] if not df_v.empty else 0
                 ast_v = df_v["Assistências"].values[0] if not df_v.empty else 0
-                st.markdown(f"""
-                    <div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">
-                        <h2 style="color: #EF4444; margin: 0;">🔴 TIME VERMELHO</h2>
-                        <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_v} <span style="font-size: 20px;">GOLS</span></h1>
-                        <p style="color: #CBD5E1; font-weight: 600;">{ast_v} Assistências Totais</p>
-                    </div>
-                """, unsafe_allow_html=True)
+                card_v = f"""
+                <div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">
+                    <h2 style="color: #EF4444; margin: 0;">🔴 TIME VERMELHO</h2>
+                    <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_v} <span style="font-size: 20px;">GOLS</span></h1>
+                    <p style="color: #CBD5E1; font-weight: 600;">{ast_v} Assistências Totais</p>
+                </div>
+                """
+                st.markdown(textwrap.dedent(card_v), unsafe_allow_html=True)
 
             with col_azul:
                 gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
                 ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
-                st.markdown(f"""
-                    <div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">
-                        <h2 style="color: #38BDF8; margin: 0;">🔵 TIME AZUL</h2>
-                        <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>
-                        <p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>
-                    </div>
-                """, unsafe_allow_html=True)
+                card_a = f"""
+                <div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">
+                    <h2 style="color: #38BDF8; margin: 0;">🔵 TIME AZUL</h2>
+                    <h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>
+                    <p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>
+                </div>
+                """
+                st.markdown(textwrap.dedent(card_a), unsafe_allow_html=True)
             
             st.markdown("<br>", unsafe_allow_html=True)
             st.dataframe(stats_times, use_container_width=True, hide_index=True)
@@ -599,14 +592,15 @@ try:
         
         for idx, (_, row) in enumerate(top3_gols.iterrows()):
             with cols_podio[idx]:
-                st.markdown(f"""
-                    <div style="background: #0F2144; border-top: 5px solid {podio_colors[idx]}; padding: 20px; border-radius: 12px; text-align: center;">
-                        <h3 style="color: {podio_colors[idx]}; margin: 0;">{podio_icons[idx]}</h3>
-                        <h2 style="color: #FFF; margin: 10px 0;">{row['Jogador']}</h2>
-                        <h1 style="color: {podio_colors[idx]}; margin: 0;">{row['Gols']} <span style="font-size: 16px;">Gols</span></h1>
-                        <p style="color: #94A3B8; margin-top: 5px;">Time: {row['Time']} | {row['Assistências']} Assistências</p>
-                    </div>
-                """, unsafe_allow_html=True)
+                card_podio = f"""
+                <div style="background: #0F2144; border-top: 5px solid {podio_colors[idx]}; padding: 20px; border-radius: 12px; text-align: center;">
+                    <h3 style="color: {podio_colors[idx]}; margin: 0;">{podio_icons[idx]}</h3>
+                    <h2 style="color: #FFF; margin: 10px 0;">{row['Jogador']}</h2>
+                    <h1 style="color: {podio_colors[idx]}; margin: 0;">{row['Gols']} <span style="font-size: 16px;">Gols</span></h1>
+                    <p style="color: #94A3B8; margin-top: 5px;">Time: {row['Time']} | {row['Assistências']} Assistências</p>
+                </div>
+                """
+                st.markdown(textwrap.dedent(card_podio), unsafe_allow_html=True)
 
 except Exception as e:
     st.error(f"Erro ao carregar dados da planilha: {e}")
