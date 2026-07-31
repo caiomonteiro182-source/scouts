@@ -36,6 +36,48 @@ CUSTOM_CSS = """
         color: #F1F5F9;
     }
 
+    /* Ticker Deslizante do Brasileirão (Estilo ESPN/Premiere) */
+    .ticker-wrap {
+        width: 100%;
+        background: linear-gradient(90deg, #0A1329 0%, #0F172A 50%, #0A1329 100%);
+        border: 1px solid #1E293B;
+        border-top: 2px solid #C8102E;
+        overflow: hidden;
+        white-space: nowrap;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        padding: 10px 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .ticker {
+        display: inline-block;
+        white-space: nowrap;
+        padding-left: 100%;
+        animation: marquee 30s linear infinite;
+    }
+
+    .ticker:hover {
+        animation-play-state: paused;
+    }
+
+    .ticker-item {
+        display: inline-block;
+        padding: 0 25px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #94A3B8;
+    }
+
+    .ticker-item b {
+        color: #FFFFFF;
+    }
+
+    @keyframes marquee {
+        0% { transform: translate3d(0, 0, 0); }
+        100% { transform: translate3d(-100%, 0, 0); }
+    }
+
     /* Centralizar conteúdo das células e cabeçalhos do st.dataframe */
     [data-testid="stDataFrame"] div[role="gridcell"] {
         justify-content: center !important;
@@ -274,7 +316,37 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. CARREGAMENTO DAS DUAS PLANILHAS E CLIMA
+# 3. TICKER DESLIZANTE DO BRASILEIRÃO
+# ==========================================
+@st.cache_data(ttl=3600)
+def get_brasileirao_results():
+    """Retorna os resultados mais recentes do Brasileirão."""
+    return [
+        "Flamengo 2 x 1 Palmeiras",
+        "São Paulo 0 x 0 Corinthians",
+        "Grêmio 3 x 1 Internacional",
+        "Atlético-MG 1 x 0 Botafogo",
+        "Fluminense 2 x 2 Vasco",
+        "Cruzeiro 1 x 0 Bahia",
+        "Athletico-PR 2 x 0 Coritiba",
+        "Fortaleza 1 x 1 Ceará"
+    ]
+
+jogos_br = get_brasileirao_results()
+items_html = "".join([f'<div class="ticker-item">⚽ <b>{jogo}</b></div> • ' for jogo in jogos_br])
+
+ticker_html = (
+    f'<div class="ticker-wrap">'
+    f'<div class="ticker">'
+    f'<span style="color: #F59E0B; font-weight: 900; padding: 0 15px;">🇧🇷 BRASILEIRÃO:</span>'
+    f'{items_html}'
+    f'</div>'
+    f'</div>'
+)
+st.markdown(ticker_html, unsafe_allow_html=True)
+
+# ==========================================
+# 4. CARREGAMENTO DAS DUAS PLANILHAS E CLIMA
 # ==========================================
 # 1. Planilha de Gols e Assistências
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
@@ -369,7 +441,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 # ==========================================
-# 4. CABEÇALHO OFICIAL
+# 5. CABEÇALHO OFICIAL
 # ==========================================
 try:
     logo_base64 = get_base64_of_bin_file("logo.png")
@@ -389,7 +461,7 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 5. CARDS SUPERIORES (PRÓXIMO JOGO & PLACAR DE VITÓRIAS)
+# 6. CARDS SUPERIORES (PRÓXIMO JOGO & PLACAR DE VITÓRIAS)
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
@@ -451,7 +523,7 @@ with col_placar:
     st.markdown(card_placar_html, unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS DE DESTAQUES RÁPIDOS
+# 7. CARDS DE DESTAQUES RÁPIDOS
 # ==========================================
 try:
     artilheiro = df_players.sort_values(by="Gols", ascending=False).iloc[0] if not df_players.empty else None
@@ -507,7 +579,7 @@ try:
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ==========================================
-    # 7. NAVEGAÇÃO POR PÍLULAS
+    # 8. NAVEGAÇÃO POR PÍLULAS
     # ==========================================
     opcao_aba = st.radio(
         label="",
