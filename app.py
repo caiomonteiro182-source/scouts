@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import os
 import base64
@@ -597,7 +598,7 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS SUPERIORES COM TEMPORIZADOR (APENAS DIAS, HORAS E MINUTOS)
+# 6. CARDS SUPERIORES COM TEMPORIZADOR AO VIVO (DIAS, HORAS E MINUTOS)
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
@@ -637,60 +638,52 @@ if dias_ate_sabado == 0 and agora.hour >= 16:
 proximo_jogo = (agora + timedelta(days=dias_ate_sabado)).replace(hour=16, minute=0, second=0, microsecond=0)
 target_date_str = proximo_jogo.isoformat()
 
-# Atualizado para omitir os segundos e manter apenas dias, horas e minutos
-timer_html = f"""
-<div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; justify-content: center;">
-    <span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>
-    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-        <span id="timer-days" style="font-size: 13px; font-weight: 900; color: #FFF;">--d</span>
-    </div>
-    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-        <span id="timer-hours" style="font-size: 13px; font-weight: 900; color: #FFF;">--h</span>
-    </div>
-    <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
-        <span id="timer-minutes" style="font-size: 13px; font-weight: 900; color: #FFF;">--m</span>
-    </div>
-</div>
-
-<img src onerror='
-    var countDownDate = new Date("{target_date_str}").getTime();
-    function updateCountdown() {{
-        var now = new Date().getTime();
-        var distance = countDownDate - now;
-        
-        if (distance < 0) return;
-        
-        var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        
-        var d = document.getElementById("timer-days");
-        if(d) d.innerHTML = String(days).padStart(2, "0") + "d";
-        var h = document.getElementById("timer-hours");
-        if(h) h.innerHTML = String(hours).padStart(2, "0") + "h";
-        var m = document.getElementById("timer-minutes");
-        if(m) m.innerHTML = String(minutes).padStart(2, "0") + "m";
-    }}
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-' style="display:none;">
-"""
-
 data_jogo = weather_info.get('data', '')
 data_str = f" ({data_jogo})" if data_jogo else ""
 
 col_jogo, col_placar = st.columns(2)
 
 with col_jogo:
-    card_jogo_html = (
-        f'<div class="info-card card-border-blue" style="align-items: center; text-align: center;">'
-        f'<div class="card-tag">📍 PRÓXIMO ENCONTRO</div>'
-        f'<div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>'
-        f'<div>{weather_html}</div>'
-        f'{timer_html}'
-        f'</div>'
-    )
-    st.markdown(card_jogo_html, unsafe_allow_html=True)
+    card_jogo_html = f"""
+    <div class="info-card card-border-blue" style="align-items: center; text-align: center;">
+        <div class="card-tag">📍 PRÓXIMO ENCONTRO</div>
+        <div class="card-main-text">Sábado{data_str} às 16:00 • Cambé - PR</div>
+        <div>{weather_html}</div>
+        <div style="display: flex; gap: 8px; margin-top: 10px; align-items: center; justify-content: center;">
+            <span style="font-size: 11px; font-weight: 800; color: #38BDF8;">⏳ FALTAM:</span>
+            <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
+                <span id="timer-days" style="font-size: 13px; font-weight: 900; color: #FFF;">--d</span>
+            </div>
+            <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
+                <span id="timer-hours" style="font-size: 13px; font-weight: 900; color: #FFF;">--h</span>
+            </div>
+            <div style="background: #0B1329; border: 1px solid #1E3A8A; border-radius: 6px; padding: 3px 8px; text-align: center;">
+                <span id="timer-minutes" style="font-size: 13px; font-weight: 900; color: #FFF;">--m</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        const countDownDate = new Date("{target_date_str}").getTime();
+        function updateTimer() {{
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+            if (distance < 0) return;
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            
+            const d = document.getElementById("timer-days");
+            if(d) d.innerText = String(days).padStart(2, "0") + "d";
+            const h = document.getElementById("timer-hours");
+            if(h) h.innerText = String(hours).padStart(2, "0") + "h";
+            const m = document.getElementById("timer-minutes");
+            if(m) m.innerText = String(minutes).padStart(2, "0") + "m";
+        }}
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    </script>
+    """
+    components.html(card_jogo_html, height=145, scrolling=False)
 
 with col_placar:
     card_placar_html = (
