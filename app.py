@@ -169,6 +169,60 @@ CUSTOM_CSS = """
         background: linear-gradient(90deg, #E11D48 0%, #C8102E 100%);
         box-shadow: 0 6px 18px rgba(225, 29, 72, 0.5);
     }
+
+    /* ESTILO PARA OS CARDS DO ELENCO */
+    .roster-card {
+        background-color: #0F172A;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        margin-bottom: 20px;
+    }
+    .roster-header-vermelho {
+        border-bottom: 3px solid #C8102E;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        color: #EF4444;
+        font-weight: 900;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .roster-header-azul {
+        border-bottom: 3px solid #38BDF8;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+        color: #38BDF8;
+        font-weight: 900;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .pos-section-title {
+        color: #F1F5F9;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 15px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .player-pill {
+        background: #1E293B;
+        color: #CBD5E1;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-block;
+        margin: 3px 2px;
+        border: 1px solid #334155;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -292,7 +346,7 @@ try:
     # ==========================================
     opcao_aba = st.radio(
         label="",
-        options=["🏆 Classificação Geral", "⚔️ Duelo de Times", "🏅 Top 3 Artilharia"],
+        options=["🏆 Classificação Geral", "👥 Elenco dos Times", "⚔️ Duelo de Times", "🏅 Top 3 Artilharia"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -336,6 +390,68 @@ try:
                 "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d"),
             }
         )
+
+    elif opcao_aba == "👥 Elenco dos Times":
+        st.subheader("👥 Elenco Oficial dos Times")
+
+        # Dados do Elenco
+        elenco_vermelho = {
+            "Goleiros": ["Vozinha"],
+            "Zagueiros": ["Nilton", "Carlão (TCR)", "Camarão Sergipano"],
+            "Laterais": ["Paulo Base", "Samuel", "Cezar", "Gledson"],
+            "Meias": ["Cassiano", "Alessandro", "Mateus Rocha", "Diego (Lucas Lima)", "Cristiano", "Manoel"],
+            "Atacantes": ["Nata", "Izaqui"]
+        }
+
+        elenco_azul = {
+            "Goleiros": ["Jonathan", "Matheus"],
+            "Zagueiros": ["Gabigol", "Wellington", "Joel"],
+            "Laterais": ["Caio", "Otero", "Cristoffer", "Jefferson"],
+            "Meias": ["Ian", "Juel", "Gabriel"],
+            "Atacantes": ["Tavinho", "P.H", "Maradona"]
+        }
+
+        col_v, col_a = st.columns(2)
+
+        # TIME VERMELHO
+        with col_v:
+            st.markdown("""
+                <div class="roster-card">
+                    <div class="roster-header-vermelho">
+                        <h2>🔴 TIME VERMELHO</h2>
+                    </div>
+            """, unsafe_allow_html=True)
+            
+            icones_pos = {
+                "Goleiros": "🧤",
+                "Zagueiros": "🛡️",
+                "Laterais": "🏃‍♂️",
+                "Meias": "🧠",
+                "Atacantes": "⚡"
+            }
+
+            for pos, jogadores in elenco_vermelho.items():
+                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        # TIME AZUL
+        with col_a:
+            st.markdown("""
+                <div class="roster-card">
+                    <div class="roster-header-azul">
+                        <h2>🔵 TIME AZUL</h2>
+                    </div>
+            """, unsafe_allow_html=True)
+
+            for pos, jogadores in elenco_azul.items():
+                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
 
     elif opcao_aba == "⚔️ Duelo de Times":
         st.subheader("⚔️ Comparativo: Time Vermelho vs Time Azul")
