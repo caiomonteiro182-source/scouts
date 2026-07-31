@@ -36,6 +36,16 @@ CUSTOM_CSS = """
         color: #F1F5F9;
     }
 
+    /* Centralizar conteúdo das células e cabeçalhos do st.dataframe */
+    [data-testid="stDataFrame"] div[role="gridcell"] {
+        justify-content: center !important;
+        text-align: center !important;
+    }
+    [data-testid="stDataFrame"] div[role="columnheader"] {
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
     /* Banner do Cabeçalho Oficial */
     .header-container {
         background: linear-gradient(135deg, #0B1B3D 0%, #152844 60%, #C8102E 100%);
@@ -264,7 +274,7 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. CARREGAMENTO DAS DUDAS PLANILHAS E CLIMA
+# 3. CARREGAMENTO DAS DUAS PLANILHAS E CLIMA
 # ==========================================
 # 1. Planilha de Gols e Assistências
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
@@ -537,12 +547,12 @@ try:
             use_container_width=True,
             hide_index=True,
             column_config={
-                "Jogador": st.column_config.TextColumn("Atleta 🏃"),
-                "Time": st.column_config.TextColumn("Time 👕"),
-                "Gols": st.column_config.NumberColumn("Gols ⚽", format="%d"),
-                "Assistências": st.column_config.NumberColumn("Assistências 🎯", format="%d"),
-                "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d"),
-                "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d"),
+                "Jogador": st.column_config.TextColumn("Atleta 🏃", alignment="center"),
+                "Time": st.column_config.TextColumn("Time 👕", alignment="center"),
+                "Gols": st.column_config.NumberColumn("Gols ⚽", format="%d", alignment="center"),
+                "Assistências": st.column_config.NumberColumn("Assistências 🎯", format="%d", alignment="center"),
+                "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d", alignment="center"),
+                "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
             }
         )
 
