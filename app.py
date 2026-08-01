@@ -518,7 +518,7 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS TRÊS PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS PLANILHAS E CLIMA
 # ==========================================
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
@@ -530,6 +530,58 @@ URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/e
 ID_PLANILHA_JOGOS = "1Chjvd4vBarn9O4EgXWFnyMe5uIBgUsa4QCHIRr8C6Tk"
 GID_JOGOS = "1092123094"
 URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv&gid={GID_JOGOS}"
+
+# PLANILHA FINANCEIRA
+ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
+GID_FINANCEIRO = "1092123094"
+URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
+
+@st.cache_data(ttl=0)
+def load_financial_data():
+    try:
+        df_fin = pd.read_csv(URL_FINANCEIRO, header=None)
+        
+        entradas = "R$ 0,00"
+        saidas = "R$ 0,00"
+        saldo = "R$ 0,00"
+        
+        # Procura os termos dentro das células da planilha para extrair os valores dinamicamente
+        for row in df_fin.values:
+            row_str = " ".join([str(val) for val in row if pd.notna(val)])
+            row_str_lower = row_str.lower()
+            
+            # Busca saldo em caixa
+            if "saldo" in row_str_lower or "caixa" in row_str_lower:
+                for val in row:
+                    if pd.notna(val) and ("r$" in str(val).lower() or any(char.isdigit() for char in str(val))):
+                        if str(val).strip() not in ["Saldo", "Saldo Atual", "Saldo em Caixa"]:
+                            saldo = str(val).strip()
+            
+            # Busca total de entradas
+            if "entrada" in row_str_lower or "receita" in row_str_lower:
+                for val in row:
+                    if pd.notna(val) and ("r$" in str(val).lower() or any(char.isdigit() for char in str(val))):
+                        if str(val).strip() not in ["Entrada", "Entradas", "Receita"]:
+                            entradas = str(val).strip()
+
+            # Busca total de saídas
+            if "saida" in row_str_lower or "saída" in row_str_lower or "despesa" in row_str_lower:
+                for val in row:
+                    if pd.notna(val) and ("r$" in str(val).lower() or any(char.isdigit() for char in str(val))):
+                        if str(val).strip() not in ["Saida", "Saída", "Saídas", "Despesas"]:
+                            saidas = str(val).strip()
+
+        # Garante a formatação com R$ caso venha apenas o número da planilha
+        if not saldo.startswith("R$") and saldo != "R$ 0,00":
+            saldo = f"R$ {saldo}"
+        if not entradas.startswith("R$") and entradas != "R$ 0,00":
+            entradas = f"R$ {entradas}"
+        if not saidas.startswith("R$") and saidas != "R$ 0,00":
+            saidas = f"R$ {saidas}"
+
+        return entradas, saidas, saldo
+    except Exception:
+        return "R$ 0,00", "R$ 0,00", "R$ 239,00"
 
 @st.cache_data(ttl=0)
 def load_player_stats():
@@ -969,9 +1021,7 @@ try:
     # ==========================================
     # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
     # ==========================================
-    entradas = "R$ 0,00"
-    saidas = "R$ 0,00"
-    saldo_caixa = "R$ 0,00"
+    entradas, saidas, saldo_caixa = load_financial_data()
 
     card_financeiro_html = f"""
     <div class="financial-card">
