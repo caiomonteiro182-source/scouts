@@ -718,29 +718,25 @@ with col_jogo:
     st.markdown(card_jogo_html, unsafe_allow_html=True)
 
 with col_placar:
-    card_placar_html = f"""
-    <div class="pl-scoreboard-card">
-        <div class="pl-card-tag">🏆 PLACAR GERAL DE VITÓRIAS</div>
-        <div class="pl-scoreboard-box">
-            <!-- Bayern de Madri -->
-            <div class="pl-team-container">
-                <span class="pl-team-badge badge-bayern"></span>
-                <span class="pl-team-name">BAYERN</span>
-                <span class="pl-score-badge">{vitorias_bayern}</span>
-            </div>
-            
-            <span class="pl-vs-divider">X</span>
-            
-            <!-- Atlético de Paris -->
-            <div class="pl-team-container right">
-                <span class="pl-score-badge">{vitorias_atletico}</span>
-                <span class="pl-team-name">ATLÉTICO</span>
-                <span class="pl-team-badge badge-atletico"></span>
-            </div>
-        </div>
-    </div>
-    """
-    st.markdown(textwrap.dedent(card_placar_html), unsafe_allow_html=True)
+    card_placar_html = (
+        f'<div class="pl-scoreboard-card">'
+        f'<div class="pl-card-tag">🏆 PLACAR GERAL DE VITÓRIAS</div>'
+        f'<div class="pl-scoreboard-box">'
+        f'<div class="pl-team-container">'
+        f'<span class="pl-team-badge badge-bayern"></span>'
+        f'<span class="pl-team-name">BAYERN</span>'
+        f'<span class="pl-score-badge">{vitorias_bayern}</span>'
+        f'</div>'
+        f'<span class="pl-vs-divider">X</span>'
+        f'<div class="pl-team-container right">'
+        f'<span class="pl-score-badge">{vitorias_atletico}</span>'
+        f'<span class="pl-team-name">ATLÉTICO</span>'
+        f'<span class="pl-team-badge badge-atletico"></span>'
+        f'</div>'
+        f'</div>'
+        f'</div>'
+    )
+    st.markdown(card_placar_html, unsafe_allow_html=True)
 
 # ==========================================
 # 7. CARDS DE DESTAQUES RÁPIDOS
