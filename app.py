@@ -147,7 +147,7 @@ CUSTOM_CSS = """
             letter-spacing: 1px !important;
         }
 
-        .info-card {
+        .info-card, .pl-scoreboard-card {
             padding: 15px !important;
         }
 
@@ -172,18 +172,9 @@ CUSTOM_CSS = """
     }
 
     .card-border-blue { border-left: 5px solid #38BDF8; }
-    .card-border-gold { border-left: 5px solid #F59E0B; }
 
     .card-tag {
         color: #38BDF8;
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .card-tag-gold {
-        color: #F59E0B;
         font-size: 11px;
         font-weight: 800;
         text-transform: uppercase;
@@ -211,25 +202,92 @@ CUSTOM_CSS = """
         margin-top: 8px;
     }
 
-    /* Placar Visual de Vitórias */
-    .scoreboard-box {
+    /* Placar Estilo Premier League (PL) */
+    .pl-scoreboard-card {
+        background: linear-gradient(135deg, #38003c 0%, #110012 100%);
+        border: 1px solid #00ff85;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        min-height: 120px;
         display: flex;
-        align-items: center;
-        justify-content: space-around;
-        background-color: #0B1329;
-        border-radius: 10px;
-        padding: 10px 15px;
-        margin-top: 8px;
-        border: 1px solid #1E293B;
+        flex-direction: column;
+        justify-content: center;
+        box-shadow: 0 0 15px rgba(0, 255, 133, 0.15);
+        position: relative;
+        overflow: hidden;
     }
 
-    .team-score {
-        font-size: 15px;
+    .pl-card-tag {
+        color: #00ff85;
+        font-size: 11px;
         font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
-    .score-red { color: #EF4444; }
-    .score-blue { color: #38BDF8; }
-    .score-divider { color: #64748B; font-weight: 900; font-size: 16px; }
+
+    .pl-scoreboard-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(10, 0, 15, 0.6);
+        border-radius: 8px;
+        padding: 8px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(5px);
+    }
+
+    .pl-team-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .pl-team-container.right {
+        justify-content: flex-end;
+    }
+
+    .pl-team-badge {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 8px currentColor;
+    }
+    .badge-bayern { background-color: #ef4444; color: #ef4444; }
+    .badge-atletico { background-color: #38bdf8; color: #38bdf8; }
+
+    .pl-team-name {
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pl-score-badge {
+        background-color: #00ff85;
+        color: #38003c;
+        font-size: 16px;
+        font-weight: 900;
+        padding: 2px 10px;
+        border-radius: 4px;
+        min-width: 32px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 255, 133, 0.4);
+    }
+
+    .pl-vs-divider {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 12px;
+        font-weight: 900;
+        padding: 0 12px;
+    }
 
     /* Cards de Métricas */
     .metric-card {
@@ -479,7 +537,6 @@ def load_player_stats():
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
     
-    # Atualiza possíveis referências antigas nos dados se necessário
     if "Time" in df.columns:
         df["Time"] = df["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
     
@@ -661,17 +718,29 @@ with col_jogo:
     st.markdown(card_jogo_html, unsafe_allow_html=True)
 
 with col_placar:
-    card_placar_html = (
-        f'<div class="info-card card-border-gold">'
-        f'<div class="card-tag-gold">🏆 PLACAR GERAL DE VITÓRIAS</div>'
-        f'<div class="scoreboard-box">'
-        f'<span class="team-score score-red">🔴 Bayern: {vitorias_bayern}</span>'
-        f'<span class="score-divider">X</span>'
-        f'<span class="team-score score-blue">🔵 Atlético: {vitorias_atletico}</span>'
-        f'</div>'
-        f'</div>'
-    )
-    st.markdown(card_placar_html, unsafe_allow_html=True)
+    card_placar_html = f"""
+    <div class="pl-scoreboard-card">
+        <div class="pl-card-tag">🏆 PLACAR GERAL DE VITÓRIAS</div>
+        <div class="pl-scoreboard-box">
+            <!-- Bayern de Madri -->
+            <div class="pl-team-container">
+                <span class="pl-team-badge badge-bayern"></span>
+                <span class="pl-team-name">BAYERN</span>
+                <span class="pl-score-badge">{vitorias_bayern}</span>
+            </div>
+            
+            <span class="pl-vs-divider">X</span>
+            
+            <!-- Atlético de Paris -->
+            <div class="pl-team-container right">
+                <span class="pl-score-badge">{vitorias_atletico}</span>
+                <span class="pl-team-name">ATLÉTICO</span>
+                <span class="pl-team-badge badge-atletico"></span>
+            </div>
+        </div>
+    </div>
+    """
+    st.markdown(textwrap.dedent(card_placar_html), unsafe_allow_html=True)
 
 # ==========================================
 # 7. CARDS DE DESTAQUES RÁPIDOS
@@ -846,7 +915,6 @@ try:
     elif opcao_aba == "⚔️ Duelo de Times":
         st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
         if "Time" in df_players.columns:
-            # Normaliza os nomes de times no dataframe de estatísticas se houver variações
             df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
             stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
             
