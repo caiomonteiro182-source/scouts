@@ -561,7 +561,6 @@ def load_financial_data():
         entradas = "R$ 40,00"
         jogadores_pagos = []
         
-        # 1. Extração dos Valores de Resumo
         for i in range(len(df_fin)):
             for j in range(len(df_fin.columns) - 1):
                 cell_text = str(df_fin.iloc[i, j]).strip().lower()
@@ -576,24 +575,19 @@ def load_financial_data():
                     elif "entradas" in cell_text or "receitas" in cell_text:
                         entradas = val_str if val_str.startswith("R$") else f"R$ {val_str}"
 
-        # 2. Leitura da Tabela de Pagamentos dos Jogadores
         for i in range(len(df_fin)):
             cell_val = str(df_fin.iloc[i, 0]).strip().lower()
             if cell_val == "jogador":
-                # Encontrou o cabeçalho da tabela de pagamentos
-                # Pega as linhas seguintes
                 for k in range(i + 1, len(df_fin)):
                     nome_atleta = str(df_fin.iloc[k, 0]).strip()
                     if pd.isna(df_fin.iloc[k, 0]) or not nome_atleta or nome_atleta.lower() in ["saldo atual", "gastos", "entradas", "total"]:
                         continue
                     
-                    # Checa as colunas de valor (como Agosto)
                     status_pagamento = str(df_fin.iloc[k, 1]).strip() if len(df_fin.columns) > 1 else ""
                     if pd.notna(df_fin.iloc[k, 1]) and status_pagamento and status_pagamento.lower() != "nan":
                         jogadores_pagos.append({"nome": nome_atleta, "valor": status_pagamento})
                 break
         
-        # Caso padrão para garantia com base no anexo 2
         if not jogadores_pagos:
             jogadores_pagos = [
                 {"nome": "Caio", "valor": "R$ 20,00"},
@@ -930,7 +924,30 @@ try:
         st.subheader("📅 Resultados dos Últimos Encontros")
         df_historico_jogos = load_match_history()
 
-        configs_colunas = {col: st.column_config.Column(alignment="center") for col in df_historico_jogos.columns}
+        # Mapeia e ajusta colunas dinamicamente para incluir Gols e Assistências
+        rename_cols = {}
+        for col in df_historico_jogos.columns:
+            if "azul" in col.lower():
+                rename_cols[col] = "🔵 Atlético de Paris"
+            elif "vermelho" in col.lower():
+                rename_cols[col] = "🔴 Bayern de Madri"
+            elif "gol" in col.lower():
+                rename_cols[col] = "Gols ⚽"
+            elif "assist" in col.lower():
+                rename_cols[col] = "Assistências 🎯"
+
+        df_historico_jogos = df_historico_jogos.rename(columns=rename_cols)
+
+        # Filtra apenas partidas com resultado preenchido
+        cols_placar = [col for col in df_historico_jogos.columns if "Bayern" in col or "Atlético" in col]
+        if cols_placar:
+            df_historico_jogos = df_historico_jogos.dropna(subset=cols_placar, how="all")
+
+        # Configura alinhamento e tipo de texto para todas as colunas
+        configs_colunas = {
+            col: st.column_config.TextColumn(alignment="center") 
+            for col in df_historico_jogos.columns
+        }
 
         st.dataframe(
             df_historico_jogos,
@@ -1068,7 +1085,6 @@ try:
     """
     st.markdown(textwrap.dedent(card_financeiro_html), unsafe_allow_html=True)
 
-    # BOTÃO / EXPANDER DE JOGADORES QUE PAGARAM A MENSALIDADE
     with st.expander("📋 Ver Atletas com Mensalidade Paga (Mês Atual)"):
         if lista_pagos:
             html_pagos = "".join([
