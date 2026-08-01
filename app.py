@@ -224,7 +224,7 @@ CUSTOM_CSS = """
     }
 
     .team-score {
-        font-size: 18px;
+        font-size: 15px;
         font-weight: 900;
     }
     .score-red { color: #EF4444; }
@@ -479,6 +479,10 @@ def load_player_stats():
     df = df.dropna(how='all')
     df.columns = df.columns.str.strip()
     
+    # Atualiza possíveis referências antigas nos dados se necessário
+    if "Time" in df.columns:
+        df["Time"] = df["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
+    
     colunas_numericas = ["Gols", "Assistências", "Gols Contra", "Participações em Gols"]
     for col in colunas_numericas:
         if col in df.columns:
@@ -589,17 +593,17 @@ st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
 
-vitorias_vermelho = 0
-vitorias_azul = 0
+vitorias_bayern = 0
+vitorias_atletico = 0
 
 try:
     for idx, row in df_vitorias.iterrows():
         row_str = str(row.values).lower()
         nums = [int(val) for val in row if str(val).isdigit()]
-        if "vermelho" in row_str and nums:
-            vitorias_vermelho = nums[0]
-        elif "azul" in row_str and nums:
-            vitorias_azul = nums[0]
+        if ("bayern" in row_str or "vermelho" in row_str) and nums:
+            vitorias_bayern = nums[0]
+        elif ("atlético" in row_str or "atletico" in row_str or "azul" in row_str) and nums:
+            vitorias_atletico = nums[0]
 except Exception:
     pass
 
@@ -616,7 +620,6 @@ if weather_info["status"]:
 else:
     weather_html = '<div class="weather-pill">⚽ Dia de Jogo Confirmado</div>'
 
-# CÁLCULO NATIVO DO TEMPORIZADOR (PYTHON)
 agora = datetime.now()
 dias_ate_sabado = (5 - agora.weekday()) % 7
 if dias_ate_sabado == 0 and agora.hour >= 16:
@@ -662,9 +665,9 @@ with col_placar:
         f'<div class="info-card card-border-gold">'
         f'<div class="card-tag-gold">🏆 PLACAR GERAL DE VITÓRIAS</div>'
         f'<div class="scoreboard-box">'
-        f'<span class="team-score score-red">🔴 Vermelho: {vitorias_vermelho}</span>'
+        f'<span class="team-score score-red">🔴 Bayern: {vitorias_bayern}</span>'
         f'<span class="score-divider">X</span>'
-        f'<span class="team-score score-blue">🔵 Azul: {vitorias_azul}</span>'
+        f'<span class="team-score score-blue">🔵 Atlético: {vitorias_atletico}</span>'
         f'</div>'
         f'</div>'
     )
@@ -798,7 +801,7 @@ try:
     elif opcao_aba == "👥 Elenco dos Times":
         st.subheader("👥 Elenco Oficial dos Times")
 
-        elenco_vermelho = {
+        elenco_bayern = {
             "Goleiros": ["Vozinha"],
             "Zagueiros": ["Nilton", "Carlão (TCR)", "Camarão Sergipano"],
             "Laterais": ["Paulo Base", "Samuel", "Cezar", "Gledson"],
@@ -806,7 +809,7 @@ try:
             "Atacantes": ["Nata", "Izaqui"]
         }
 
-        elenco_azul = {
+        elenco_atletico = {
             "Goleiros": ["Jonathan", "Matheus"],
             "Zagueiros": ["Gabigol", "Wellington", "Joel"],
             "Laterais": ["Caio", "Otero", "Cristoffer", "Jefferson"],
@@ -814,7 +817,7 @@ try:
             "Atacantes": ["Tavinho", "P.H", "Maradona"]
         }
 
-        col_v, col_a = st.columns(2)
+        col_bayern, col_atletico = st.columns(2)
 
         icones_pos = {
             "Goleiros": "🧤",
@@ -824,50 +827,52 @@ try:
             "Atacantes": "⚡"
         }
 
-        with col_v:
-            st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 TIME VERMELHO</h2></div>', unsafe_allow_html=True)
-            for pos, jogadores in elenco_vermelho.items():
+        with col_bayern:
+            st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 BAYERN DE MADRI</h2></div>', unsafe_allow_html=True)
+            for pos, jogadores in elenco_bayern.items():
                 st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
                 pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
                 st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
-        with col_a:
-            st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 TIME AZUL</h2></div>', unsafe_allow_html=True)
-            for pos, jogadores in elenco_azul.items():
+        with col_atletico:
+            st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 ATLÉTICO DE PARIS</h2></div>', unsafe_allow_html=True)
+            for pos, jogadores in elenco_atletico.items():
                 st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
                 pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
                 st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
             st.markdown("</div>", unsafe_allow_html=True)
 
     elif opcao_aba == "⚔️ Duelo de Times":
-        st.subheader("⚔️ Comparativo: Time Vermelho vs Time Azul")
+        st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
         if "Time" in df_players.columns:
+            # Normaliza os nomes de times no dataframe de estatísticas se houver variações
+            df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
             stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
             
-            col_vermelho, col_azul = st.columns(2)
+            col_bayern, col_atletico = st.columns(2)
             
-            df_v = stats_times[stats_times["Time"] == "Vermelho"]
-            df_a = stats_times[stats_times["Time"] == "Azul"]
+            df_b = stats_times[stats_times["Time"] == "Bayern de Madri"]
+            df_a = stats_times[stats_times["Time"] == "Atlético de Paris"]
 
-            with col_vermelho:
-                gols_v = df_v["Gols"].values[0] if not df_v.empty else 0
-                ast_v = df_v["Assistências"].values[0] if not df_v.empty else 0
-                card_v = (
+            with col_bayern:
+                gols_b = df_b["Gols"].values[0] if not df_b.empty else 0
+                ast_b = df_b["Assistências"].values[0] if not df_b.empty else 0
+                card_b = (
                     f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h2 style="color: #EF4444; margin: 0;">🔴 TIME VERMELHO</h2>'
-                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_v} <span style="font-size: 20px;">GOLS</span></h1>'
-                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_v} Assistências Totais</p>'
+                    f'<h2 style="color: #EF4444; margin: 0;">🔴 BAYERN DE MADRI</h2>'
+                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_b} <span style="font-size: 20px;">GOLS</span></h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_b} Assistências Totais</p>'
                     f'</div>'
                 )
-                st.markdown(card_v, unsafe_allow_html=True)
+                st.markdown(card_b, unsafe_allow_html=True)
 
-            with col_azul:
+            with col_atletico:
                 gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
                 ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
                 card_a = (
                     f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h2 style="color: #38BDF8; margin: 0;">🔵 TIME AZUL</h2>'
+                    f'<h2 style="color: #38BDF8; margin: 0;">🔵 ATLÉTICO DE PARIS</h2>'
                     f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>'
                     f'<p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>'
                     f'</div>'
