@@ -282,11 +282,28 @@ CUSTOM_CSS = """
         box-shadow: 0 2px 8px rgba(0, 255, 133, 0.4);
     }
 
-    .pl-vs-divider {
-        color: rgba(255, 255, 255, 0.3);
-        font-size: 12px;
-        font-weight: 900;
+    .pl-draw-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         padding: 0 12px;
+    }
+
+    .pl-draw-badge {
+        background-color: #64748B;
+        color: #FFFFFF;
+        font-size: 13px;
+        font-weight: 900;
+        padding: 2px 8px;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .pl-draw-label {
+        font-size: 9px;
+        color: #94A3B8;
+        font-weight: 700;
+        margin-top: 2px;
     }
 
     /* Cards de Métricas */
@@ -538,6 +555,7 @@ st.markdown(ticker_html, unsafe_allow_html=True)
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
 
+# Planilha de Vitórias e Empates
 ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
 GID_VITORIAS = "1092123094"
 URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv&gid={GID_VITORIAS}"
@@ -623,9 +641,7 @@ def load_player_stats():
 @st.cache_data(ttl=0)
 def load_victories_stats():
     try:
-        df_vic = pd.read_csv(URL_VITORIAS)
-        df_vic.columns = df_vic.columns.str.strip()
-        return df_vic
+        return pd.read_csv(URL_VITORIAS)
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv")
 
@@ -715,22 +731,43 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. CARDS SUPERIORES COM TEMPORIZADOR LIMPO
+# 6. LEITURA DE VITÓRIAS E EMPATES (PLANILHA ID: 1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0)
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
 
 vitorias_bayern = 0
 vitorias_atletico = 0
+empates = 0
 
 try:
+    df_vitorias.columns = df_vitorias.columns.astype(str).str.strip()
+    
+    # Busca dinamicamente por formato de Linhas ou Colunas na planilha
     for idx, row in df_vitorias.iterrows():
-        row_str = str(row.values).lower()
+        row_str = " ".join([str(val) for val in row.values]).lower()
         nums = [int(val) for val in row if str(val).isdigit()]
+        
         if ("bayern" in row_str or "vermelho" in row_str) and nums:
             vitorias_bayern = nums[0]
         elif ("atlético" in row_str or "atletico" in row_str or "azul" in row_str) and nums:
             vitorias_atletico = nums[0]
+        elif ("empate" in row_str or "empates" in row_str) and nums:
+            empates = nums[0]
+
+    # Mapeamento adicional para leitura via Cabeçalhos de Colunas
+    for col in df_vitorias.columns:
+        col_lower = col.lower()
+        primeiro_valor = df_vitorias[col].dropna().iloc[0] if not df_vitorias[col].dropna().empty else None
+        
+        if primeiro_valor is not None and str(primeiro_valor).isdigit():
+            val = int(primeiro_valor)
+            if "bayern" in col_lower or "vermelho" in col_lower:
+                vitorias_bayern = val
+            elif "atlético" in col_lower or "atletico" in col_lower or "azul" in col_lower:
+                vitorias_atletico = val
+            elif "empate" in col_lower:
+                empates = val
 except Exception:
     pass
 
@@ -790,14 +827,17 @@ with col_jogo:
 with col_placar:
     card_placar_html = (
         f'<div class="pl-scoreboard-card">'
-        f'<div class="pl-card-tag">🏆 PLACAR GERAL DE VITÓRIAS</div>'
+        f'<div class="pl-card-tag">🏆 RETROSPECTO GERAL DOS CONFRONTOS</div>'
         f'<div class="pl-scoreboard-box">'
         f'<div class="pl-team-container">'
         f'<span class="pl-team-badge badge-bayern"></span>'
         f'<span class="pl-team-name">BAYERN</span>'
         f'<span class="pl-score-badge">{vitorias_bayern}</span>'
         f'</div>'
-        f'<span class="pl-vs-divider">X</span>'
+        f'<div class="pl-draw-container">'
+        f'<span class="pl-draw-badge">{empates}</span>'
+        f'<span class="pl-draw-label">EMPATES</span>'
+        f'</div>'
         f'<div class="pl-team-container right">'
         f'<span class="pl-score-badge">{vitorias_atletico}</span>'
         f'<span class="pl-team-name">ATLÉTICO</span>'
@@ -924,7 +964,6 @@ try:
         st.subheader("📅 Resultados dos Últimos Encontros")
         df_historico_jogos = load_match_history()
 
-        # Mapeia e ajusta colunas dinamicamente para incluir Gols e Assistências
         rename_cols = {}
         for col in df_historico_jogos.columns:
             if "azul" in col.lower():
@@ -938,12 +977,10 @@ try:
 
         df_historico_jogos = df_historico_jogos.rename(columns=rename_cols)
 
-        # Filtra apenas partidas com resultado preenchido
         cols_placar = [col for col in df_historico_jogos.columns if "Bayern" in col or "Atlético" in col]
         if cols_placar:
             df_historico_jogos = df_historico_jogos.dropna(subset=cols_placar, how="all")
 
-        # Configura alinhamento e tipo de texto para todas as colunas
         configs_colunas = {
             col: st.column_config.TextColumn(alignment="center") 
             for col in df_historico_jogos.columns
@@ -1007,7 +1044,7 @@ try:
             df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
             stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
             
-            col_bayern, col_atletico = st.columns(2)
+            col_bayern, col_empate, col_atletico = st.columns([2, 1, 2])
             
             df_b = stats_times[stats_times["Time"] == "Bayern de Madri"]
             df_a = stats_times[stats_times["Time"] == "Atlético de Paris"]
@@ -1017,21 +1054,31 @@ try:
                 ast_b = df_b["Assistências"].values[0] if not df_b.empty else 0
                 card_b = (
                     f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h2 style="color: #EF4444; margin: 0;">🔴 BAYERN DE MADRI</h2>'
-                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_b} <span style="font-size: 20px;">GOLS</span></h1>'
-                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_b} Assistências Totais</p>'
+                    f'<h2 style="color: #EF4444; margin: 0;">🔴 BAYERN</h2>'
+                    f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_bayern} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">{gols_b} Gols | {ast_b} Assistências</p>'
                     f'</div>'
                 )
                 st.markdown(card_b, unsafe_allow_html=True)
+
+            with col_empate:
+                card_e = (
+                    f'<div style="background-color: #1E293B; border: 2px solid #64748B; padding: 20px; border-radius: 12px; text-align: center;">'
+                    f'<h2 style="color: #94A3B8; margin: 0;">🤝 EMPATES</h2>'
+                    f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{empates}</h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">Igualdades</p>'
+                    f'</div>'
+                )
+                st.markdown(card_e, unsafe_allow_html=True)
 
             with col_atletico:
                 gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
                 ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
                 card_a = (
                     f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h2 style="color: #38BDF8; margin: 0;">🔵 ATLÉTICO DE PARIS</h2>'
-                    f'<h1 style="color: #FFF; font-size: 48px; margin: 10px 0;">{gols_a} <span style="font-size: 20px;">GOLS</span></h1>'
-                    f'<p style="color: #CBD5E1; font-weight: 600;">{ast_a} Assistências Totais</p>'
+                    f'<h2 style="color: #38BDF8; margin: 0;">🔵 ATLÉTICO</h2>'
+                    f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_atletico} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
+                    f'<p style="color: #CBD5E1; font-weight: 600;">{gols_a} Gols | {ast_a} Assistências</p>'
                     f'</div>'
                 )
                 st.markdown(card_a, unsafe_allow_html=True)
