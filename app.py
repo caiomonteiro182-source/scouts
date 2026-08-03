@@ -365,6 +365,17 @@ CUSTOM_CSS = """
         gap: 8px;
         margin: 4px;
     }
+
+    /* Caixa Chave Pix */
+    .pix-key-box {
+        background-color: #0F172A;
+        border: 1px dashed #10B981;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-top: 10px;
+        color: #F1F5F9;
+        font-size: 13px;
+    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -591,7 +602,6 @@ def get_qr_code_file_path():
     """Localiza o caminho físico do arquivo do QR Code na pasta raiz do repositório."""
     base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
     
-    # Busca prioritária
     candidatos = [
         os.path.join(base_dir, "IMG-20260803-WA0062.jpg"),
         os.path.join(base_dir, "IMG-20260803-WA0062.png"),
@@ -603,7 +613,6 @@ def get_qr_code_file_path():
         if os.path.exists(caminho):
             return caminho
             
-    # Busca por padrão no diretório
     matches = glob.glob(os.path.join(base_dir, "*WA0062*")) + glob.glob(os.path.join(base_dir, "*1000517793*"))
     if matches:
         return matches[0]
@@ -999,7 +1008,7 @@ st.subheader("💰 PAINEL FINANCEIRO DO CLUBE")
 
 entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
 
-# Cards de Resumo Financeiro com Streamlit Columns
+# Cards de Resumo Financeiro
 m1, m2, m3 = st.columns(3)
 with m1:
     st.markdown(f'<div style="background:#070D18; border:1px solid #1E293B; border-radius:10px; padding:15px; text-align:center;"><div style="color:#94A3B8; font-size:12px; font-weight:700;">📈 ENTRADAS (MENSALIDADES)</div><div style="color:#10B981; font-size:26px; font-weight:900; margin-top:5px;">{entradas}</div></div>', unsafe_allow_html=True)
@@ -1010,7 +1019,7 @@ with m3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Bloco do QR Code Nativo
+# Bloco do QR Code e Chave Pix Alternativa
 col_qr, col_txt = st.columns([1, 2])
 
 qr_path = get_qr_code_file_path()
@@ -1019,12 +1028,11 @@ with col_qr:
     if qr_path:
         st.image(qr_path, width=160, caption="QR Code Pix FCB")
     else:
-        # Fallback para o repositório público no GitHub
         github_url = "https://raw.githubusercontent.com/caiow/futebol-castelo-branco/main/IMG-20260803-WA0062.jpg"
         try:
             st.image(github_url, width=160, caption="QR Code Pix FCB")
         except Exception:
-            st.warning("QR Code não encontrado na pasta.")
+            st.warning("QR Code não encontrado.")
 
 with col_txt:
     st.markdown("""
@@ -1032,8 +1040,18 @@ with col_txt:
     * **Valor:** <span style="color:#10B981; font-weight:800; font-size:18px;">R$ 20,00</span>
     * **Vencimento:** **Até dia 11 de cada mês**
     
-    *Escaneie o QR Code ao lado pelo aplicativo do seu banco para realizar o pagamento oficial da mensalidade.*
+    *Escaneie o QR Code ao lado pelo aplicativo do seu banco para realizar o pagamento.*
     """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="pix-key-box">
+        🔑 <b>Não consegue escannear?</b> Utilize a chave Pix abaixo:<br>
+        <b style="color:#10B981; font-size:15px;">43 9 98397065</b> — <i>Sidney Alves</i>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Campo para copiar a chave Pix com 1 clique
+    st.code("43998397065", language="text")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1072,4 +1090,3 @@ with col_exp2:
             st.dataframe(df_g, use_container_width=True, hide_index=True)
         else:
             st.info("Nenhum gasto específico detalhado na Coluna H até o momento.")
-                
