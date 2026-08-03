@@ -595,12 +595,10 @@ def load_financial_data():
         jogadores_pendentes = []
         lista_gastos_detalhada = []
         
-        # 1. Pega valor de Gastos diretamente da célula B2
         if len(df_fin) > 1 and len(df_fin.columns) > 1 and pd.notna(df_fin.iloc[1, 1]):
             val_b2 = str(df_fin.iloc[1, 1]).strip()
             gastos = val_b2 if val_b2.startswith("R$") else f"R$ {val_b2}"
 
-        # 2. Varredura para buscar Entradas e Saldo Geral
         for i in range(len(df_fin)):
             for j in range(len(df_fin.columns) - 1):
                 cell_text = str(df_fin.iloc[i, j]).strip().lower()
@@ -613,7 +611,6 @@ def load_financial_data():
                     elif "entradas" in cell_text or "receitas" in cell_text or "arrecadacoes" in cell_text or "arrecadações" in cell_text:
                         entradas = val_str if val_str.startswith("R$") else f"R$ {val_str}"
 
-        # 3. Leitura dos Atletas (Pagos e Não-Pagos)
         for i in range(len(df_fin)):
             cell_val = str(df_fin.iloc[i, 0]).strip().lower()
             if cell_val == "jogador" or "jogador" in cell_val:
@@ -631,7 +628,6 @@ def load_financial_data():
                         jogadores_pendentes.append({"nome": nome_atleta, "status": "Pendente"})
                 break
 
-        # 4. Leitura da Coluna H para Detalhamento de Gastos
         if len(df_fin.columns) >= 8:
             for i in range(len(df_fin)):
                 item_gasto = df_fin.iloc[i, 7]
@@ -738,7 +734,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 def get_qr_code_html():
-    """Busca dinâmica pela imagem enviada (IMG-20260803-WA0062.jpg) ou qualquer equivalente."""
+    """Tenta carregar a imagem do QR Code via arquivo local ou via busca dinâmica no diretório."""
     possiveis_arquivos = [
         "IMG-20260803-WA0062.jpg",
         "IMG-20260803-WA0062.png",
@@ -754,7 +750,7 @@ def get_qr_code_html():
             break
 
     if not encontrado:
-        matches = glob.glob("*WA0062*") + glob.glob("*1000517793*") + glob.glob("*qr*")
+        matches = glob.glob("*WA0062*") + glob.glob("*1000517793*") + glob.glob("*qr*") + glob.glob("*.jpg")
         if matches:
             encontrado = matches[0]
 
@@ -767,7 +763,9 @@ def get_qr_code_html():
         except Exception:
             pass
 
-    return '<div style="width: 140px; height: 140px; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #94A3B8; border-radius: 10px; font-weight: 700;">QR Code Pix</div>'
+    # Fallback para o arquivo no repositório GitHub
+    github_raw_url = "https://raw.githubusercontent.com/caiow/futebol-castelo-branco/main/IMG-20260803-WA0062.jpg"
+    return f'<img src="{github_raw_url}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
 
 # ==========================================
 # 5. CABEÇALHO OFICIAL
@@ -1168,7 +1166,6 @@ try:
     # ==========================================
     entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
 
-    # Obtém o elemento HTML correspondente à imagem do QR Code
     qr_img_tag = get_qr_code_html()
 
     card_financeiro_html = f"""
@@ -1249,3 +1246,4 @@ try:
 
 except Exception as e:
     st.error(f"Erro ao carregar dados das planilhas: {e}")
+                
