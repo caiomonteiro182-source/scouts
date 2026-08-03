@@ -742,7 +742,7 @@ def get_base64_of_bin_file(bin_file):
 try:
     logo_base64 = get_base64_of_bin_file("logo.png")
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 140px; width: auto; object-fit: contain;">'
-except:
+except Exception:
     logo_html = '<h1 style="margin:0; font-size: 70px;">🛡️</h1>'
 
 header_code = f"""
@@ -1135,11 +1135,13 @@ try:
     # ==========================================
     entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
 
-    # Tenta carregar a imagem do QR Code
+    # Prepara visualização da imagem do QR Code
     qr_code_path = "1000517793.jpg"
-    qr_base64 = ""
     if os.path.exists(qr_code_path):
         qr_base64 = get_base64_of_bin_file(qr_code_path)
+        qr_img_element = f'<img src="data:image/jpeg;base64,{qr_base64}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
+    else:
+        qr_img_element = '<div style="width: 140px; height: 140px; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #94A3B8; border-radius: 10px;">QR Code Pix</div>'
 
     card_financeiro_html = f"""
     <div class="financial-card">
@@ -1162,7 +1164,7 @@ try:
         <!-- Bloco do QR Code e Instruções de Pagamento -->
         <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #1E293B; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 20px; background-color: #070D18; padding: 20px; border-radius: 12px;">
             <div style="text-align: center;">
-                {'<img src="data:image/jpeg;base64,' + qr_base64 + '" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px;">' if qr_base64 else '<div style="width: 140px; height: 140px; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #94A3B8;">QR Code Pix</div>'}
+                {qr_img_element}
             </div>
             <div style="max-width: 380px; text-align: left;">
                 <h4 style="color: #10B981; margin: 0 0 8px 0; font-size: 16px; font-weight: 800;">📱 PAGAMENTO DA MENSALIDADE VIA PIX</h4>
@@ -1219,4 +1221,3 @@ try:
 
 except Exception as e:
     st.error(f"Erro ao carregar dados das planilhas: {e}")
-                                                                    
