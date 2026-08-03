@@ -577,7 +577,6 @@ ID_PLANILHA_JOGOS = "1Chjvd4vBarn9O4EgXWFnyMe5uIBgUsa4QCHIRr8C6Tk"
 GID_JOGOS = "1092123094"
 URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv&gid={GID_JOGOS}"
 
-# PLANILHA FINANCEIRA (ID: 14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA)
 ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
 GID_FINANCEIRO = "1092123094"
 URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
@@ -624,7 +623,6 @@ def load_financial_data():
                     
                     status_val = str(df_fin.iloc[k, 1]).strip() if len(df_fin.columns) > 1 else ""
                     
-                    # Checa status de pagamento (se contem valor R$, sim, ok, ou se ta vazio/nao)
                     if pd.notna(df_fin.iloc[k, 1]) and status_val and status_val.lower() not in ["nan", "não", "nao", "pendente", "0", "r$ 0,00"]:
                         valor_pago = status_val if status_val.startswith("R$") else f"R$ {status_val}"
                         jogadores_pagos.append({"nome": nome_atleta, "valor": valor_pago})
@@ -639,7 +637,6 @@ def load_financial_data():
                 if pd.notna(item_gasto):
                     item_str = str(item_gasto).strip()
                     if item_str.lower() not in ["gastos", "descrição", "tipo de gasto", "nan"]:
-                        # Tenta pegar valor associado na coluna ao lado (I/Índice 8) se existir
                         val_gasto = str(df_fin.iloc[i, 8]).strip() if len(df_fin.columns) > 8 and pd.notna(df_fin.iloc[i, 8]) else ""
                         lista_gastos_detalhada.append({"descricao": item_str, "valor": val_gasto})
 
@@ -1138,12 +1135,18 @@ try:
     # ==========================================
     entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
 
+    # Tenta carregar a imagem do QR Code
+    qr_code_path = "1000517793.jpg"
+    qr_base64 = ""
+    if os.path.exists(qr_code_path):
+        qr_base64 = get_base64_of_bin_file(qr_code_path)
+
     card_financeiro_html = f"""
     <div class="financial-card">
         <div class="financial-title">💰 PAINEL FINANCEIRO DO CLUBE</div>
         <div class="fin-summary-box">
             <div class="fin-item">
-                <div class="fin-label">📈 Entradas (Mensalidades / Arrecadações)</div>
+                <div class="fin-label">📈 Entradas (Mensalidades)</div>
                 <div class="fin-value-green">{entradas}</div>
             </div>
             <div class="fin-item">
@@ -1153,6 +1156,25 @@ try:
             <div class="fin-item">
                 <div class="fin-label">💵 Saldo Atual em Caixa</div>
                 <div class="fin-value-blue">{saldo_caixa}</div>
+            </div>
+        </div>
+        
+        <!-- Bloco do QR Code e Instruções de Pagamento -->
+        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #1E293B; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 20px; background-color: #070D18; padding: 20px; border-radius: 12px;">
+            <div style="text-align: center;">
+                {'<img src="data:image/jpeg;base64,' + qr_base64 + '" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px;">' if qr_base64 else '<div style="width: 140px; height: 140px; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #94A3B8;">QR Code Pix</div>'}
+            </div>
+            <div style="max-width: 380px; text-align: left;">
+                <h4 style="color: #10B981; margin: 0 0 8px 0; font-size: 16px; font-weight: 800;">📱 PAGAMENTO DA MENSALIDADE VIA PIX</h4>
+                <p style="color: #F1F5F9; font-size: 14px; margin: 4px 0; font-weight: 700;">
+                    Valor: <span style="color: #10B981; font-size: 16px;">R$ 20,00</span>
+                </p>
+                <p style="color: #CBD5E1; font-size: 13px; margin: 4px 0; font-weight: 600;">
+                    📅 Vencimento: <b>Até dia 11 de cada mês</b>
+                </p>
+                <p style="color: #94A3B8; font-size: 12px; margin-top: 10px; line-height: 1.4;">
+                    Escaneie o QR Code ao lado pelo aplicativo do seu banco para realizar o pagamento.
+                </p>
             </div>
         </div>
     </div>
@@ -1197,3 +1219,4 @@ try:
 
 except Exception as e:
     st.error(f"Erro ao carregar dados das planilhas: {e}")
+                                                                    
