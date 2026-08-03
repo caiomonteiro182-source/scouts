@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import base64
 import requests
-import textwrap
 import glob
 from datetime import datetime, timedelta
 
@@ -123,41 +122,6 @@ CUSTOM_CSS = """
         letter-spacing: 1.5px;
     }
 
-    /* Ajustes Mobile */
-    @media (max-width: 768px) {
-        .header-container {
-            flex-direction: column !important;
-            text-align: center !important;
-            padding: 20px 15px !important;
-            gap: 12px !important;
-            border-left: none !important;
-            border-top: 5px solid #C8102E !important;
-        }
-
-        .header-container img {
-            height: 110px !important;
-        }
-
-        .header-title {
-            font-size: 24px !important;
-            letter-spacing: 1px !important;
-        }
-
-        .header-subtitle {
-            font-size: 11px !important;
-            letter-spacing: 1px !important;
-        }
-
-        .info-card, .pl-scoreboard-card {
-            padding: 15px !important;
-        }
-
-        .fin-summary-box {
-            flex-direction: column !important;
-            gap: 15px !important;
-        }
-    }
-
     /* Cards Informativos Topo */
     .info-card {
         background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
@@ -215,8 +179,6 @@ CUSTOM_CSS = """
         flex-direction: column;
         justify-content: center;
         box-shadow: 0 0 15px rgba(0, 255, 133, 0.15);
-        position: relative;
-        overflow: hidden;
     }
 
     .pl-card-tag {
@@ -226,9 +188,6 @@ CUSTOM_CSS = """
         text-transform: uppercase;
         letter-spacing: 2px;
         margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
     }
 
     .pl-scoreboard-box {
@@ -239,7 +198,6 @@ CUSTOM_CSS = """
         border-radius: 8px;
         padding: 8px 14px;
         border: 1px solid rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(5px);
     }
 
     .pl-team-container {
@@ -258,17 +216,15 @@ CUSTOM_CSS = """
         height: 10px;
         border-radius: 50%;
         display: inline-block;
-        box-shadow: 0 0 8px currentColor;
     }
-    .badge-bayern { background-color: #ef4444; color: #ef4444; }
-    .badge-atletico { background-color: #38bdf8; color: #38bdf8; }
+    .badge-bayern { background-color: #ef4444; }
+    .badge-atletico { background-color: #38bdf8; }
 
     .pl-team-name {
         color: #ffffff;
         font-size: 13px;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
     .pl-score-badge {
@@ -280,7 +236,6 @@ CUSTOM_CSS = """
         border-radius: 4px;
         min-width: 32px;
         text-align: center;
-        box-shadow: 0 2px 8px rgba(0, 255, 133, 0.4);
     }
 
     .pl-draw-container {
@@ -297,7 +252,6 @@ CUSTOM_CSS = """
         font-weight: 900;
         padding: 2px 8px;
         border-radius: 4px;
-        text-align: center;
     }
 
     .pl-draw-label {
@@ -323,7 +277,6 @@ CUSTOM_CSS = """
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 1px;
     }
 
     .metric-value {
@@ -342,44 +295,6 @@ CUSTOM_CSS = """
     .gold-badge { color: #F59E0B; }
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
-
-    /* Navegação por Pílulas */
-    div[data-testid="stRadio"] > div {
-        background-color: #0F172A;
-        padding: 8px 12px;
-        border-radius: 50px;
-        display: inline-flex;
-        gap: 10px;
-        border: 1px solid #1E293B;
-    }
-
-    div[data-testid="stRadio"] label {
-        background-color: transparent !important;
-        color: #94A3B8 !important;
-        border-radius: 30px !important;
-        padding: 10px 24px !important;
-        font-weight: 700 !important;
-        font-size: 14px !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-        border: none !important;
-        margin: 0 !important;
-    }
-
-    div[data-testid="stRadio"] label:hover {
-        color: #FFFFFF !important;
-        background-color: rgba(200, 16, 46, 0.2) !important;
-    }
-
-    div[data-testid="stRadio"] label[data-checked="true"] {
-        background: linear-gradient(90deg, #C8102E 0%, #990B20 100%) !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 4px 14px rgba(200, 16, 46, 0.4) !important;
-    }
-
-    div[data-testid="stRadio"] label > div:first-child {
-        display: none !important;
-    }
 
     /* Cards do Elenco */
     .roster-card {
@@ -423,64 +338,6 @@ CUSTOM_CSS = """
         border: 1px solid #334155;
     }
 
-    /* Card Financeiro Rodapé */
-    .financial-card {
-        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
-        border: 1px solid #334155;
-        border-top: 4px solid #10B981;
-        border-radius: 15px;
-        padding: 25px;
-        margin-top: 40px;
-        margin-bottom: 10px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    }
-    .financial-title {
-        color: #10B981;
-        font-size: 14px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .fin-summary-box {
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        background-color: #070D18;
-        padding: 18px;
-        border-radius: 12px;
-        border: 1px solid #1E293B;
-    }
-    .fin-item {
-        text-align: center;
-    }
-    .fin-label {
-        font-size: 11px;
-        font-weight: 700;
-        color: #94A3B8;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-    .fin-value-green {
-        font-size: 24px;
-        font-weight: 900;
-        color: #10B981;
-    }
-    .fin-value-red {
-        font-size: 24px;
-        font-weight: 900;
-        color: #EF4444;
-    }
-    .fin-value-blue {
-        font-size: 26px;
-        font-weight: 900;
-        color: #38BDF8;
-    }
-
-    /* Estilização dos Paga / Não-Paga Mensalidade */
     .paid-player-pill {
         background-color: rgba(16, 185, 129, 0.15);
         border: 1px solid #10B981;
@@ -527,14 +384,11 @@ def get_brasileirao_results():
             if p.get("placar_oficial_mandante") is not None and p.get("placar_oficial_visitante") is not None:
                 m_id = str(p["clube_casa_id"])
                 v_id = str(p["clube_visitante_id"])
-                
                 nome_m = clubes.get(m_id, {}).get("apelido", "Time")
                 nome_v = clubes.get(v_id, {}).get("apelido", "Time")
                 gols_m = p["placar_oficial_mandante"]
                 gols_v = p["placar_oficial_visitante"]
-                
                 resultados.append(f"{nome_m} {gols_m} x {gols_v} {nome_v}")
-        
         if resultados:
             return resultados
     except Exception:
@@ -733,51 +587,40 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-def get_qr_code_html():
-    """Busca dinâmica robusta da imagem no repositório local e converte para base64"""
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+def get_qr_code_file_path():
+    """Localiza o caminho físico do arquivo do QR Code na pasta raiz do repositório."""
+    base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
     
-    # 1. Tenta o arquivo com nome exato fornecido
-    nome_especifico = "IMG-20260803-WA0062.jpg"
-    caminho_especifico = os.path.join(base_dir, nome_especifico)
-    
-    if os.path.exists(caminho_especifico):
-        b64_str = get_base64_of_bin_file(caminho_especifico)
-        return f'<img src="data:image/jpeg;base64,{b64_str}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
-
-    # 2. Varre todos os arquivos com padrão WA0062 ou com extensão de imagem na pasta
-    padroes_busca = [
-        os.path.join(base_dir, "*WA0062*"),
-        os.path.join(base_dir, "*.jpg"),
-        os.path.join(base_dir, "*.jpeg"),
-        os.path.join(base_dir, "*.png")
+    # Busca prioritária
+    candidatos = [
+        os.path.join(base_dir, "IMG-20260803-WA0062.jpg"),
+        os.path.join(base_dir, "IMG-20260803-WA0062.png"),
+        os.path.join(base_dir, "IMG-20260803-WA0062.jpeg"),
+        "IMG-20260803-WA0062.jpg"
     ]
     
-    for padrao in padroes_busca:
-        arquivos = glob.glob(padrao)
-        for arquivo in arquivos:
-            # Ignora logo.png se houver
-            if "logo" in arquivo.lower():
-                continue
-            try:
-                b64_str = get_base64_of_bin_file(arquivo)
-                ext = arquivo.split('.')[-1].lower()
-                mime = "jpeg" if ext in ["jpg", "jpeg"] else "png"
-                return f'<img src="data:image/{mime};base64,{b64_str}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
-            except Exception:
-                pass
-
-    # 3. Exibição de placeholder visual no layout caso nenhuma imagem seja encontrada
-    return '<div style="width: 140px; height: 140px; border: 2px dashed #10B981; display: flex; align-items: center; justify-content: center; color: #10B981; border-radius: 10px; font-weight: 700; font-size: 13px; text-align: center;">📲 QR Code Pix</div>'
+    for caminho in candidatos:
+        if os.path.exists(caminho):
+            return caminho
+            
+    # Busca por padrão no diretório
+    matches = glob.glob(os.path.join(base_dir, "*WA0062*")) + glob.glob(os.path.join(base_dir, "*1000517793*"))
+    if matches:
+        return matches[0]
+        
+    return None
 
 # ==========================================
 # 5. CABEÇALHO OFICIAL
 # ==========================================
 try:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
     logo_path = os.path.join(base_dir, "logo.png")
-    logo_base64 = get_base64_of_bin_file(logo_path if os.path.exists(logo_path) else "logo.png")
-    logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 140px; width: auto; object-fit: contain;">'
+    if os.path.exists(logo_path):
+        logo_base64 = get_base64_of_bin_file(logo_path)
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 140px; width: auto; object-fit: contain;">'
+    else:
+        logo_html = '<h1 style="margin:0; font-size: 70px;">🛡️</h1>'
 except Exception:
     logo_html = '<h1 style="margin:0; font-size: 70px;">🛡️</h1>'
 
@@ -790,7 +633,7 @@ header_code = f"""
     </div>
 </div>
 """
-st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
+st.markdown(header_code, unsafe_allow_html=True)
 
 # ==========================================
 # 6. CARDS SUPERIORES COM TEMPORIZADOR E PLACAR COMPLETO
@@ -911,343 +754,322 @@ with col_placar:
 # ==========================================
 # 7. CARDS DE DESTAQUES RÁPIDOS
 # ==========================================
-try:
-    artilheiro = df_players.sort_values(by="Gols", ascending=False).iloc[0] if not df_players.empty else None
-    garcom = df_players.sort_values(by="Assistências", ascending=False).iloc[0] if not df_players.empty else None
-    lider_participacoes = df_players.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df_players.empty else None
+artilheiro = df_players.sort_values(by="Gols", ascending=False).iloc[0] if not df_players.empty else None
+garcom = df_players.sort_values(by="Assistências", ascending=False).iloc[0] if not df_players.empty else None
+lider_participacoes = df_players.sort_values(by="Participações em Gols", ascending=False).iloc[0] if not df_players.empty else None
 
-    c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4 = st.columns(4)
 
-    with c1:
-        total_g = df_players["Gols"].sum()
-        card_total = (
+with c1:
+    total_g = df_players["Gols"].sum() if not df_players.empty else 0
+    card_total = (
+        f'<div class="metric-card">'
+        f'<div class="metric-title">⚽ TOTAL DE GOLS</div>'
+        f'<div class="metric-value">{total_g}</div>'
+        f'<div class="metric-sub">Marcados em 2026</div>'
+        f'</div>'
+    )
+    st.markdown(card_total, unsafe_allow_html=True)
+
+with c2:
+    if artilheiro is not None:
+        card_artilheiro = (
             f'<div class="metric-card">'
-            f'<div class="metric-title">⚽ TOTAL DE GOLS</div>'
-            f'<div class="metric-value">{total_g}</div>'
-            f'<div class="metric-sub">Marcados em 2026</div>'
+            f'<div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>'
+            f'<div class="metric-value gold-badge">{artilheiro["Gols"]} <span style="font-size:16px;">gols</span></div>'
+            f'<div class="metric-sub">👑 {artilheiro["Jogador"]} ({artilheiro["Time"]})</div>'
             f'</div>'
         )
-        st.markdown(card_total, unsafe_allow_html=True)
+        st.markdown(card_artilheiro, unsafe_allow_html=True)
 
-    with c2:
-        if artilheiro is not None:
-            card_artilheiro = (
-                f'<div class="metric-card">'
-                f'<div class="metric-title">🥇 ARTILHEIRO PRINCIPAL</div>'
-                f'<div class="metric-value gold-badge">{artilheiro["Gols"]} <span style="font-size:16px;">gols</span></div>'
-                f'<div class="metric-sub">👑 {artilheiro["Jogador"]} ({artilheiro["Time"]})</div>'
-                f'</div>'
-            )
-            st.markdown(card_artilheiro, unsafe_allow_html=True)
+with c3:
+    if garcom is not None:
+        card_garcom = (
+            f'<div class="metric-card">'
+            f'<div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>'
+            f'<div class="metric-value silver-badge">{garcom["Assistências"]} <span style="font-size:16px;">ast</span></div>'
+            f'<div class="metric-sub">👟 {garcom["Jogador"]} ({garcom["Time"]})</div>'
+            f'</div>'
+        )
+        st.markdown(card_garcom, unsafe_allow_html=True)
 
-    with c3:
-        if garcom is not None:
-            card_garcom = (
-                f'<div class="metric-card">'
-                f'<div class="metric-title">🎯 REI DAS ASSISTÊNCIAS</div>'
-                f'<div class="metric-value silver-badge">{garcom["Assistências"]} <span style="font-size:16px;">ast</span></div>'
-                f'<div class="metric-sub">👟 {garcom["Jogador"]} ({garcom["Time"]})</div>'
-                f'</div>'
-            )
-            st.markdown(card_garcom, unsafe_allow_html=True)
+with c4:
+    if lider_participacoes is not None:
+        card_part = (
+            f'<div class="metric-card">'
+            f'<div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>'
+            f'<div class="metric-value red-badge">{lider_participacoes["Participações em Gols"]} <span style="font-size:16px;">G+A</span></div>'
+            f'<div class="metric-sub">⚡ {lider_participacoes["Jogador"]} ({lider_participacoes["Time"]})</div>'
+            f'</div>'
+        )
+        st.markdown(card_part, unsafe_allow_html=True)
 
-    with c4:
-        if lider_participacoes is not None:
-            card_part = (
-                f'<div class="metric-card">'
-                f'<div class="metric-title">🔥 MAIOR PARTICIPAÇÃO</div>'
-                f'<div class="metric-value red-badge">{lider_participacoes["Participações em Gols"]} <span style="font-size:16px;">G+A</span></div>'
-                f'<div class="metric-sub">⚡ {lider_participacoes["Jogador"]} ({lider_participacoes["Time"]})</div>'
-                f'</div>'
-            )
-            st.markdown(card_part, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+# ==========================================
+# 8. NAVEGAÇÃO POR PÍLULAS
+# ==========================================
+opcao_aba = st.radio(
+    label="",
+    options=[
+        "🏆 Classificação Geral",
+        "📅 Últimos Jogos FCB",
+        "👥 Elenco dos Times",
+        "⚔️ Duelo de Times",
+        "🏅 Top 3 Artilharia"
+    ],
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
-    # ==========================================
-    # 8. NAVEGAÇÃO POR PÍLULAS
-    # ==========================================
-    opcao_aba = st.radio(
-        label="",
-        options=[
-            "🏆 Classificação Geral",
-            "📅 Últimos Jogos FCB",
-            "👥 Elenco dos Times",
-            "⚔️ Duelo de Times",
-            "🏅 Top 3 Artilharia"
-        ],
-        horizontal=True,
-        label_visibility="collapsed"
+st.markdown("<br>", unsafe_allow_html=True)
+
+if opcao_aba == "🏆 Classificação Geral":
+    st.subheader("📋 Tabela Completa de Desempenho")
+    col_filtro1, col_filtro2 = st.columns([1, 2])
+    
+    with col_filtro1:
+        if "Time" in df_players.columns:
+            times_unicos = ["Todos os Times"] + sorted(list(df_players["Time"].dropna().unique()))
+            filtro_time = st.selectbox("Filtrar por Time:", times_unicos)
+        else:
+            filtro_time = "Todos os Times"
+
+    with col_filtro2:
+        busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
+
+    df_filtrado = df_players.copy()
+    if filtro_time != "Todos os Times":
+        df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
+    if busca_jogador:
+        df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
+
+    df_filtrado = df_filtrado.sort_values(by=["Gols", "Assistências", "Participações em Gols"], ascending=False)
+
+    st.dataframe(
+        df_filtrado,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Jogador": st.column_config.TextColumn("Atleta 🏃", alignment="center"),
+            "Time": st.column_config.TextColumn("Time 👕", alignment="center"),
+            "Gols": st.column_config.NumberColumn("Gols ⚽", format="%d", alignment="center"),
+            "Assistências": st.column_config.NumberColumn("Assistências 🎯", format="%d", alignment="center"),
+            "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d", alignment="center"),
+            "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
+        }
     )
 
-    st.markdown("<br>", unsafe_allow_html=True)
+elif opcao_aba == "📅 Últimos Jogos FCB":
+    st.subheader("📅 Resultados dos Últimos Encontros")
+    df_historico_jogos = load_match_history()
 
-    # CONTEÚDO DE CADA ABA
-    if opcao_aba == "🏆 Classificação Geral":
-        st.subheader("📋 Tabela Completa de Desempenho")
+    rename_cols = {}
+    for col in df_historico_jogos.columns:
+        if "azul" in col.lower():
+            rename_cols[col] = "🔵 Atlético de Paris"
+        elif "vermelho" in col.lower():
+            rename_cols[col] = "🔴 Bayern de Madri"
+        elif "gol" in col.lower():
+            rename_cols[col] = "Gols ⚽"
+        elif "assist" in col.lower():
+            rename_cols[col] = "Assistências 🎯"
+
+    df_historico_jogos = df_historico_jogos.rename(columns=rename_cols)
+    cols_placar = [col for col in df_historico_jogos.columns if "Bayern" in col or "Atlético" in col]
+    if cols_placar:
+        df_historico_jogos = df_historico_jogos.dropna(subset=cols_placar, how="all")
+
+    st.dataframe(
+        df_historico_jogos,
+        use_container_width=True,
+        hide_index=True
+    )
+
+elif opcao_aba == "👥 Elenco dos Times":
+    st.subheader("👥 Elenco Oficial dos Times")
+
+    elenco_bayern = {
+        "Goleiros": ["Vozinha"],
+        "Zagueiros": ["Nilton", "Carlão (TCR)", "Camarão Sergipano"],
+        "Laterais": ["Paulo Base", "Samuel", "Cezar", "Gledson"],
+        "Meias": ["Cassiano", "Alessandro", "Mateus Rocha", "Diego (Lucas Lima)", "Cristiano", "Manoel"],
+        "Atacantes": ["Nata", "Izaqui"]
+    }
+
+    elenco_atletico = {
+        "Goleiros": ["Jonathan", "Matheus"],
+        "Zagueiros": ["Gabigol", "Wellington", "Joel"],
+        "Laterais": ["Caio", "Otero", "Cristoffer", "Jefferson"],
+        "Meias": ["Ian", "Juel", "Gabriel"],
+        "Atacantes": ["Tavinho", "P.H", "Maradona"]
+    }
+
+    col_bayern, col_atletico = st.columns(2)
+    icones_pos = {"Goleiros": "🧤", "Zagueiros": "🛡️", "Laterais": "🏃‍♂️", "Meias": "🧠", "Atacantes": "⚡"}
+
+    with col_bayern:
+        st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 BAYERN DE MADRI</h2></div>', unsafe_allow_html=True)
+        for pos, jogadores in elenco_bayern.items():
+            st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+            pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+            st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with col_atletico:
+        st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 ATLÉTICO DE PARIS</h2></div>', unsafe_allow_html=True)
+        for pos, jogadores in elenco_atletico.items():
+            st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+            pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+            st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+elif opcao_aba == "⚔️ Duelo de Times":
+    st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
+    if "Time" in df_players.columns:
+        df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
+        stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
         
-        col_filtro1, col_filtro2 = st.columns([1, 2])
-        
-        with col_filtro1:
-            if "Time" in df_players.columns:
-                times_unicos = ["Todos os Times"] + sorted(list(df_players["Time"].dropna().unique()))
-                filtro_time = st.selectbox("Filtrar por Time:", times_unicos)
-            else:
-                filtro_time = "Todos os Times"
-
-        with col_filtro2:
-            busca_jogador = st.text_input("Buscar Atleta por Nome:", "", placeholder="Digite o nome do jogador...")
-
-        df_filtrado = df_players.copy()
-        if filtro_time != "Todos os Times":
-            df_filtrado = df_filtrado[df_filtrado["Time"] == filtro_time]
-        if busca_jogador:
-            df_filtrado = df_filtrado[df_filtrado["Jogador"].str.contains(busca_jogador, case=False, na=False)]
-
-        df_filtrado = df_filtrado.sort_values(by=["Gols", "Assistências", "Participações em Gols"], ascending=False)
-
-        st.dataframe(
-            df_filtrado,
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "Jogador": st.column_config.TextColumn("Atleta 🏃", alignment="center"),
-                "Time": st.column_config.TextColumn("Time 👕", alignment="center"),
-                "Gols": st.column_config.NumberColumn("Gols ⚽", format="%d", alignment="center"),
-                "Assistências": st.column_config.NumberColumn("Assistências 🎯", format="%d", alignment="center"),
-                "Gols Contra": st.column_config.NumberColumn("Gols Contra ⚠️", format="%d", alignment="center"),
-                "Participações em Gols": st.column_config.NumberColumn("Participações (G+A) 🔥", format="%d", alignment="center"),
-            }
-        )
-
-    elif opcao_aba == "📅 Últimos Jogos FCB":
-        st.subheader("📅 Resultados dos Últimos Encontros")
-        df_historico_jogos = load_match_history()
-
-        rename_cols = {}
-        for col in df_historico_jogos.columns:
-            if "azul" in col.lower():
-                rename_cols[col] = "🔵 Atlético de Paris"
-            elif "vermelho" in col.lower():
-                rename_cols[col] = "🔴 Bayern de Madri"
-            elif "gol" in col.lower():
-                rename_cols[col] = "Gols ⚽"
-            elif "assist" in col.lower():
-                rename_cols[col] = "Assistências 🎯"
-
-        df_historico_jogos = df_historico_jogos.rename(columns=rename_cols)
-
-        cols_placar = [col for col in df_historico_jogos.columns if "Bayern" in col or "Atlético" in col]
-        if cols_placar:
-            df_historico_jogos = df_historico_jogos.dropna(subset=cols_placar, how="all")
-
-        configs_colunas = {
-            col: st.column_config.TextColumn(alignment="center") 
-            for col in df_historico_jogos.columns
-        }
-
-        st.dataframe(
-            df_historico_jogos,
-            use_container_width=True,
-            hide_index=True,
-            column_config=configs_colunas
-        )
-
-    elif opcao_aba == "👥 Elenco dos Times":
-        st.subheader("👥 Elenco Oficial dos Times")
-
-        elenco_bayern = {
-            "Goleiros": ["Vozinha"],
-            "Zagueiros": ["Nilton", "Carlão (TCR)", "Camarão Sergipano"],
-            "Laterais": ["Paulo Base", "Samuel", "Cezar", "Gledson"],
-            "Meias": ["Cassiano", "Alessandro", "Mateus Rocha", "Diego (Lucas Lima)", "Cristiano", "Manoel"],
-            "Atacantes": ["Nata", "Izaqui"]
-        }
-
-        elenco_atletico = {
-            "Goleiros": ["Jonathan", "Matheus"],
-            "Zagueiros": ["Gabigol", "Wellington", "Joel"],
-            "Laterais": ["Caio", "Otero", "Cristoffer", "Jefferson"],
-            "Meias": ["Ian", "Juel", "Gabriel"],
-            "Atacantes": ["Tavinho", "P.H", "Maradona"]
-        }
-
-        col_bayern, col_atletico = st.columns(2)
-
-        icones_pos = {
-            "Goleiros": "🧤",
-            "Zagueiros": "🛡️",
-            "Laterais": "🏃‍♂️",
-            "Meias": "🧠",
-            "Atacantes": "⚡"
-        }
+        col_bayern, col_empate, col_atletico = st.columns([2, 1, 2])
+        df_b = stats_times[stats_times["Time"] == "Bayern de Madri"]
+        df_a = stats_times[stats_times["Time"] == "Atlético de Paris"]
 
         with col_bayern:
-            st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 BAYERN DE MADRI</h2></div>', unsafe_allow_html=True)
-            for pos, jogadores in elenco_bayern.items():
-                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
-                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            gols_b = df_b["Gols"].values[0] if not df_b.empty else 0
+            ast_b = df_b["Assistências"].values[0] if not df_b.empty else 0
+            card_b = (
+                f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">'
+                f'<h2 style="color: #EF4444; margin: 0;">🔴 BAYERN</h2>'
+                f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_bayern} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
+                f'<p style="color: #CBD5E1; font-weight: 600;">{gols_b} Gols | {ast_b} Assistências</p>'
+                f'</div>'
+            )
+            st.markdown(card_b, unsafe_allow_html=True)
+
+        with col_empate:
+            card_e = (
+                f'<div style="background-color: #1E293B; border: 2px solid #64748B; padding: 20px; border-radius: 12px; text-align: center;">'
+                f'<h2 style="color: #94A3B8; margin: 0;">🤝 EMPATES</h2>'
+                f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{empates}</h1>'
+                f'<p style="color: #CBD5E1; font-weight: 600;">Igualdades</p>'
+                f'</div>'
+            )
+            st.markdown(card_e, unsafe_allow_html=True)
 
         with col_atletico:
-            st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 ATLÉTICO DE PARIS</h2></div>', unsafe_allow_html=True)
-            for pos, jogadores in elenco_atletico.items():
-                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
-                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
-
-    elif opcao_aba == "⚔️ Duelo de Times":
-        st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
-        if "Time" in df_players.columns:
-            df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
-            stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
-            
-            col_bayern, col_empate, col_atletico = st.columns([2, 1, 2])
-            
-            df_b = stats_times[stats_times["Time"] == "Bayern de Madri"]
-            df_a = stats_times[stats_times["Time"] == "Atlético de Paris"]
-
-            with col_bayern:
-                gols_b = df_b["Gols"].values[0] if not df_b.empty else 0
-                ast_b = df_b["Assistências"].values[0] if not df_b.empty else 0
-                card_b = (
-                    f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h2 style="color: #EF4444; margin: 0;">🔴 BAYERN</h2>'
-                    f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_bayern} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
-                    f'<p style="color: #CBD5E1; font-weight: 600;">{gols_b} Gols | {ast_b} Assistências</p>'
-                    f'</div>'
-                )
-                st.markdown(card_b, unsafe_allow_html=True)
-
-            with col_empate:
-                card_e = (
-                    f'<div style="background-color: #1E293B; border: 2px solid #64748B; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h2 style="color: #94A3B8; margin: 0;">🤝 EMPATES</h2>'
-                    f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{empates}</h1>'
-                    f'<p style="color: #CBD5E1; font-weight: 600;">Igualdades</p>'
-                    f'</div>'
-                )
-                st.markdown(card_e, unsafe_allow_html=True)
-
-            with col_atletico:
-                gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
-                ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
-                card_a = (
-                    f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h2 style="color: #38BDF8; margin: 0;">🔵 ATLÉTICO</h2>'
-                    f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_atletico} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
-                    f'<p style="color: #CBD5E1; font-weight: 600;">{gols_a} Gols | {ast_a} Assistências</p>'
-                    f'</div>'
-                )
-                st.markdown(card_a, unsafe_allow_html=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.dataframe(stats_times, use_container_width=True, hide_index=True)
-
-    elif opcao_aba == "🏅 Top 3 Artilharia":
-        st.subheader("🏅 Pódio da Artilharia")
-        top3_gols = df_players.sort_values(by="Gols", ascending=False).head(3)
+            gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
+            ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
+            card_a = (
+                f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">'
+                f'<h2 style="color: #38BDF8; margin: 0;">🔵 ATLÉTICO</h2>'
+                f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_atletico} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
+                f'<p style="color: #CBD5E1; font-weight: 600;">{gols_a} Gols | {ast_a} Assistências</p>'
+                f'</div>'
+            )
+            st.markdown(card_a, unsafe_allow_html=True)
         
-        cols_podio = st.columns(3)
-        podio_icons = ["🥇 1º Lugar", "🥈 2º Lugar", "🥉 3º Lugar"]
-        podio_colors = ["#F59E0B", "#94A3B8", "#D97706"]
-        
-        for idx, (_, row) in enumerate(top3_gols.iterrows()):
-            with cols_podio[idx]:
-                card_podio = (
-                    f'<div style="background: #0F2144; border-top: 5px solid {podio_colors[idx]}; padding: 20px; border-radius: 12px; text-align: center;">'
-                    f'<h3 style="color: {podio_colors[idx]}; margin: 0;">{podio_icons[idx]}</h3>'
-                    f'<h2 style="color: #FFF; margin: 10px 0;">{row["Jogador"]}</h2>'
-                    f'<h1 style="color: {podio_colors[idx]}; margin: 0;">{row["Gols"]} <span style="font-size: 16px;">Gols</span></h1>'
-                    f'<p style="color: #94A3B8; margin-top: 5px;">Time: {row["Time"]} | {row["Assistências"]} Assistências</p>'
-                    f'</div>'
-                )
-                st.markdown(card_podio, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.dataframe(stats_times, use_container_width=True, hide_index=True)
 
-    # ==========================================
-    # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
-    # ==========================================
-    entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
+elif opcao_aba == "🏅 Top 3 Artilharia":
+    st.subheader("🏅 Pódio da Artilharia")
+    top3_gols = df_players.sort_values(by="Gols", ascending=False).head(3)
+    
+    cols_podio = st.columns(3)
+    podio_icons = ["🥇 1º Lugar", "🥈 2º Lugar", "🥉 3º Lugar"]
+    podio_colors = ["#F59E0B", "#94A3B8", "#D97706"]
+    
+    for idx, (_, row) in enumerate(top3_gols.iterrows()):
+        with cols_podio[idx]:
+            card_podio = (
+                f'<div style="background: #0F2144; border-top: 5px solid {podio_colors[idx]}; padding: 20px; border-radius: 12px; text-align: center;">'
+                f'<h3 style="color: {podio_colors[idx]}; margin: 0;">{podio_icons[idx]}</h3>'
+                f'<h2 style="color: #FFF; margin: 10px 0;">{row["Jogador"]}</h2>'
+                f'<h1 style="color: {podio_colors[idx]}; margin: 0;">{row["Gols"]} <span style="font-size: 16px;">Gols</span></h1>'
+                f'<p style="color: #94A3B8; margin-top: 5px;">Time: {row["Time"]} | {row["Assistências"]} Assistências</p>'
+                f'</div>'
+            )
+            st.markdown(card_podio, unsafe_allow_html=True)
 
-    qr_img_tag = get_qr_code_html()
+# ==========================================
+# 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
+# ==========================================
+st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
+st.subheader("💰 PAINEL FINANCEIRO DO CLUBE")
 
-    card_financeiro_html = f"""
-    <div class="financial-card">
-        <div class="financial-title">💰 PAINEL FINANCEIRO DO CLUBE</div>
-        <div class="fin-summary-box">
-            <div class="fin-item">
-                <div class="fin-label">📈 Entradas (Mensalidades)</div>
-                <div class="fin-value-green">{entradas}</div>
-            </div>
-            <div class="fin-item">
-                <div class="fin-label">📉 Gastos (Campo / Bolas / Coletes)</div>
-                <div class="fin-value-red">{gastos_b2}</div>
-            </div>
-            <div class="fin-item">
-                <div class="fin-label">💵 Saldo Atual em Caixa</div>
-                <div class="fin-value-blue">{saldo_caixa}</div>
-            </div>
-        </div>
-        
-        <!-- Bloco do QR Code e Instruções de Pagamento -->
-        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #1E293B; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 20px; background-color: #070D18; padding: 20px; border-radius: 12px;">
-            <div style="text-align: center;">
-                {qr_img_tag}
-            </div>
-            <div style="max-width: 380px; text-align: left;">
-                <h4 style="color: #10B981; margin: 0 0 8px 0; font-size: 16px; font-weight: 800;">📱 PAGAMENTO DA MENSALIDADE VIA PIX</h4>
-                <p style="color: #F1F5F9; font-size: 14px; margin: 4px 0; font-weight: 700;">
-                    Valor: <span style="color: #10B981; font-size: 16px;">R$ 20,00</span>
-                </p>
-                <p style="color: #CBD5E1; font-size: 13px; margin: 4px 0; font-weight: 600;">
-                    📅 Vencimento: <b>Até dia 11 de cada mês</b>
-                </p>
-                <p style="color: #94A3B8; font-size: 12px; margin-top: 10px; line-height: 1.4;">
-                    Escaneie o QR Code ao lado pelo aplicativo do seu banco para realizar o pagamento.
-                </p>
-            </div>
-        </div>
-    </div>
-    """
-    st.markdown(textwrap.dedent(card_financeiro_html), unsafe_allow_html=True)
+entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
 
-    col_exp1, col_exp2 = st.columns(2)
+# Cards de Resumo Financeiro com Streamlit Columns
+m1, m2, m3 = st.columns(3)
+with m1:
+    st.markdown(f'<div style="background:#070D18; border:1px solid #1E293B; border-radius:10px; padding:15px; text-align:center;"><div style="color:#94A3B8; font-size:12px; font-weight:700;">📈 ENTRADAS (MENSALIDADES)</div><div style="color:#10B981; font-size:26px; font-weight:900; margin-top:5px;">{entradas}</div></div>', unsafe_allow_html=True)
+with m2:
+    st.markdown(f'<div style="background:#070D18; border:1px solid #1E293B; border-radius:10px; padding:15px; text-align:center;"><div style="color:#94A3B8; font-size:12px; font-weight:700;">📉 GASTOS (CAMPO / BOLAS)</div><div style="color:#EF4444; font-size:26px; font-weight:900; margin-top:5px;">{gastos_b2}</div></div>', unsafe_allow_html=True)
+with m3:
+    st.markdown(f'<div style="background:#070D18; border:1px solid #1E293B; border-radius:10px; padding:15px; text-align:center;"><div style="color:#94A3B8; font-size:12px; font-weight:700;">💵 SALDO ATUAL EM CAIXA</div><div style="color:#38BDF8; font-size:26px; font-weight:900; margin-top:5px;">{saldo_caixa}</div></div>', unsafe_allow_html=True)
 
-    with col_exp1:
-        with st.expander("📋 Status das Mensalidades (Mês Atual)"):
-            if lista_pagos or lista_pendentes:
-                st.markdown("##### ✅ **Atletas com Mensalidade Paga:**")
-                if lista_pagos:
-                    html_pagos = "".join([
-                        f'<div class="paid-player-pill">✅ <b>{atleta["nome"]}</b> ({atleta["valor"]})</div>'
-                        for atleta in lista_pagos
-                    ])
-                    st.markdown(f'<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px;">{html_pagos}</div>', unsafe_allow_html=True)
-                else:
-                    st.info("Nenhum pagamento registrado.")
+st.markdown("<br>", unsafe_allow_html=True)
 
-                st.markdown("##### ❌ **Atletas com Mensalidade Pendente:**")
-                if lista_pendentes:
-                    html_pendentes = "".join([
-                        f'<div class="unpaid-player-pill">❌ <b>{atleta["nome"]}</b></div>'
-                        for atleta in lista_pendentes
-                    ])
-                    st.markdown(f'<div style="display: flex; flex-wrap: wrap; gap: 6px;">{html_pendentes}</div>', unsafe_allow_html=True)
-                else:
-                    st.success("Todos os atletas estão em dia!")
+# Bloco do QR Code Nativo
+col_qr, col_txt = st.columns([1, 2])
+
+qr_path = get_qr_code_file_path()
+
+with col_qr:
+    if qr_path:
+        st.image(qr_path, width=160, caption="QR Code Pix FCB")
+    else:
+        # Fallback para o repositório público no GitHub
+        github_url = "https://raw.githubusercontent.com/caiow/futebol-castelo-branco/main/IMG-20260803-WA0062.jpg"
+        try:
+            st.image(github_url, width=160, caption="QR Code Pix FCB")
+        except Exception:
+            st.warning("QR Code não encontrado na pasta.")
+
+with col_txt:
+    st.markdown("""
+    ### 📱 PAGAMENTO DA MENSALIDADE VIA PIX
+    * **Valor:** <span style="color:#10B981; font-weight:800; font-size:18px;">R$ 20,00</span>
+    * **Vencimento:** **Até dia 11 de cada mês**
+    
+    *Escaneie o QR Code ao lado pelo aplicativo do seu banco para realizar o pagamento oficial da mensalidade.*
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+col_exp1, col_exp2 = st.columns(2)
+
+with col_exp1:
+    with st.expander("📋 Status das Mensalidades (Mês Atual)"):
+        if lista_pagos or lista_pendentes:
+            st.markdown("##### ✅ **Atletas com Mensalidade Paga:**")
+            if lista_pagos:
+                html_pagos = "".join([
+                    f'<div class="paid-player-pill">✅ <b>{atleta["nome"]}</b> ({atleta["valor"]})</div>'
+                    for atleta in lista_pagos
+                ])
+                st.markdown(f'<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px;">{html_pagos}</div>', unsafe_allow_html=True)
             else:
-                st.info("Nenhum registro de mensalidade encontrado.")
+                st.info("Nenhum pagamento registrado.")
 
-    with col_exp2:
-        with st.expander("📉 Ver Detalhamento de Gastos"):
-            if detalhe_gastos:
-                df_g = pd.DataFrame(detalhe_gastos)
-                df_g.columns = ["Descrição do Gasto", "Valor"]
-                st.dataframe(df_g, use_container_width=True, hide_index=True)
+            st.markdown("##### ❌ **Atletas com Mensalidade Pendente:**")
+            if lista_pendentes:
+                html_pendentes = "".join([
+                    f'<div class="unpaid-player-pill">❌ <b>{atleta["nome"]}</b></div>'
+                    for atleta in lista_pendentes
+                ])
+                st.markdown(f'<div style="display: flex; flex-wrap: wrap; gap: 6px;">{html_pendentes}</div>', unsafe_allow_html=True)
             else:
-                st.info("Nenhum gasto específico detalhado na Coluna H até o momento.")
+                st.success("Todos os atletas estão em dia!")
+        else:
+            st.info("Nenhum registro de mensalidade encontrado.")
 
-except Exception as e:
-    st.error(f"Erro ao carregar dados das planilhas: {e}")
+with col_exp2:
+    with st.expander("📉 Ver Detalhamento de Gastos"):
+        if detalhe_gastos:
+            df_g = pd.DataFrame(detalhe_gastos)
+            df_g.columns = ["Descrição do Gasto", "Valor"]
+            st.dataframe(df_g, use_container_width=True, hide_index=True)
+        else:
+            st.info("Nenhum gasto específico detalhado na Coluna H até o momento.")
+                
