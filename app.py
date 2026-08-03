@@ -4,6 +4,7 @@ import os
 import base64
 import requests
 import textwrap
+import glob
 from datetime import datetime, timedelta
 
 # ==========================================
@@ -594,7 +595,7 @@ def load_financial_data():
         jogadores_pendentes = []
         lista_gastos_detalhada = []
         
-        # 1. Pega valor de Gastos diretamente da célula B2 (linha index 1, coluna index 1)
+        # 1. Pega valor de Gastos diretamente da célula B2
         if len(df_fin) > 1 and len(df_fin.columns) > 1 and pd.notna(df_fin.iloc[1, 1]):
             val_b2 = str(df_fin.iloc[1, 1]).strip()
             gastos = val_b2 if val_b2.startswith("R$") else f"R$ {val_b2}"
@@ -630,7 +631,7 @@ def load_financial_data():
                         jogadores_pendentes.append({"nome": nome_atleta, "status": "Pendente"})
                 break
 
-        # 4. Leitura da Coluna H (Índice 7) para Tipo e Valor de Gastos Explicativos
+        # 4. Leitura da Coluna H para Detalhamento de Gastos
         if len(df_fin.columns) >= 8:
             for i in range(len(df_fin)):
                 item_gasto = df_fin.iloc[i, 7]
@@ -735,6 +736,38 @@ def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
     return base64.b64encode(data).decode()
+
+def get_qr_code_html():
+    """Busca dinâmica pela imagem enviada (IMG-20260803-WA0062.jpg) ou qualquer equivalente."""
+    possiveis_arquivos = [
+        "IMG-20260803-WA0062.jpg",
+        "IMG-20260803-WA0062.png",
+        "IMG-20260803-WA0062.jpeg",
+        "1000517793.jpg",
+        "1000517793.png"
+    ]
+    
+    encontrado = None
+    for filename in possiveis_arquivos:
+        if os.path.exists(filename):
+            encontrado = filename
+            break
+
+    if not encontrado:
+        matches = glob.glob("*WA0062*") + glob.glob("*1000517793*") + glob.glob("*qr*")
+        if matches:
+            encontrado = matches[0]
+
+    if encontrado:
+        try:
+            b64_str = get_base64_of_bin_file(encontrado)
+            ext = encontrado.split('.')[-1].lower()
+            mime = "jpeg" if ext in ["jpg", "jpeg"] else "png"
+            return f'<img src="data:image/{mime};base64,{b64_str}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
+        except Exception:
+            pass
+
+    return '<div style="width: 140px; height: 140px; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #94A3B8; border-radius: 10px; font-weight: 700;">QR Code Pix</div>'
 
 # ==========================================
 # 5. CABEÇALHO OFICIAL
@@ -1135,13 +1168,8 @@ try:
     # ==========================================
     entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
 
-    # Prepara visualização da imagem do QR Code
-    qr_code_path = "1000517793.jpg"
-    if os.path.exists(qr_code_path):
-        qr_base64 = get_base64_of_bin_file(qr_code_path)
-        qr_img_element = f'<img src="data:image/jpeg;base64,{qr_base64}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
-    else:
-        qr_img_element = '<div style="width: 140px; height: 140px; border: 2px dashed #334155; display: flex; align-items: center; justify-content: center; color: #94A3B8; border-radius: 10px;">QR Code Pix</div>'
+    # Obtém o elemento HTML correspondente à imagem do QR Code
+    qr_img_tag = get_qr_code_html()
 
     card_financeiro_html = f"""
     <div class="financial-card">
@@ -1164,7 +1192,7 @@ try:
         <!-- Bloco do QR Code e Instruções de Pagamento -->
         <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #1E293B; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 20px; background-color: #070D18; padding: 20px; border-radius: 12px;">
             <div style="text-align: center;">
-                {qr_img_element}
+                {qr_img_tag}
             </div>
             <div style="max-width: 380px; text-align: left;">
                 <h4 style="color: #10B981; margin: 0 0 8px 0; font-size: 16px; font-weight: 800;">📱 PAGAMENTO DA MENSALIDADE VIA PIX</h4>
