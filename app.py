@@ -479,11 +479,25 @@ CUSTOM_CSS = """
         color: #38BDF8;
     }
 
-    /* Estilização dos Paga-Mensalidade */
+    /* Estilização dos Paga / Não-Paga Mensalidade */
     .paid-player-pill {
         background-color: rgba(16, 185, 129, 0.15);
         border: 1px solid #10B981;
         color: #10B981;
+        padding: 8px 16px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 4px;
+    }
+
+    .unpaid-player-pill {
+        background-color: rgba(239, 68, 68, 0.15);
+        border: 1px solid #EF4444;
+        color: #EF4444;
         padding: 8px 16px;
         border-radius: 25px;
         font-size: 13px;
@@ -555,7 +569,6 @@ st.markdown(ticker_html, unsafe_allow_html=True)
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
 
-# Planilha de Vitórias e Empates
 ID_PLANILHA_VITORIAS = "1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0"
 GID_VITORIAS = "1092123094"
 URL_VITORIAS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv&gid={GID_VITORIAS}"
@@ -564,7 +577,7 @@ ID_PLANILHA_JOGOS = "1Chjvd4vBarn9O4EgXWFnyMe5uIBgUsa4QCHIRr8C6Tk"
 GID_JOGOS = "1092123094"
 URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv&gid={GID_JOGOS}"
 
-# PLANILHA FINANCEIRA
+# PLANILHA FINANCEIRA (ID: 14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA)
 ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
 GID_FINANCEIRO = "1092123094"
 URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
@@ -574,11 +587,20 @@ def load_financial_data():
     try:
         df_fin = pd.read_csv(URL_FINANCEIRO, header=None)
         
-        saldo = "R$ 239,00"
+        saldo = "R$ 0,00"
         gastos = "R$ 0,00"
-        entradas = "R$ 40,00"
-        jogadores_pagos = []
+        entradas = "R$ 0,00"
         
+        jogadores_pagos = []
+        jogadores_pendentes = []
+        lista_gastos_detalhada = []
+        
+        # 1. Pega valor de Gastos diretamente da célula B2 (linha index 1, coluna index 1)
+        if len(df_fin) > 1 and len(df_fin.columns) > 1 and pd.notna(df_fin.iloc[1, 1]):
+            val_b2 = str(df_fin.iloc[1, 1]).strip()
+            gastos = val_b2 if val_b2.startswith("R$") else f"R$ {val_b2}"
+
+        # 2. Varredura para buscar Entradas e Saldo Geral
         for i in range(len(df_fin)):
             for j in range(len(df_fin.columns) - 1):
                 cell_text = str(df_fin.iloc[i, j]).strip().lower()
@@ -588,36 +610,43 @@ def load_financial_data():
                     val_str = str(next_val).strip()
                     if "saldo actual" in cell_text or "saldo atual" in cell_text:
                         saldo = val_str if val_str.startswith("R$") else f"R$ {val_str}"
-                    elif "gastos" in cell_text or "saidas" in cell_text or "saídas" in cell_text:
-                        gastos = val_str if val_str.startswith("R$") else f"R$ {val_str}"
-                    elif "entradas" in cell_text or "receitas" in cell_text:
+                    elif "entradas" in cell_text or "receitas" in cell_text or "arrecadacoes" in cell_text or "arrecadações" in cell_text:
                         entradas = val_str if val_str.startswith("R$") else f"R$ {val_str}"
 
+        # 3. Leitura dos Atletas (Pagos e Não-Pagos)
         for i in range(len(df_fin)):
             cell_val = str(df_fin.iloc[i, 0]).strip().lower()
-            if cell_val == "jogador":
+            if cell_val == "jogador" or "jogador" in cell_val:
                 for k in range(i + 1, len(df_fin)):
                     nome_atleta = str(df_fin.iloc[k, 0]).strip()
-                    if pd.isna(df_fin.iloc[k, 0]) or not nome_atleta or nome_atleta.lower() in ["saldo atual", "gastos", "entradas", "total"]:
+                    if pd.isna(df_fin.iloc[k, 0]) or not nome_atleta or nome_atleta.lower() in ["saldo atual", "gastos", "entradas", "total", "nan"]:
                         continue
                     
-                    status_pagamento = str(df_fin.iloc[k, 1]).strip() if len(df_fin.columns) > 1 else ""
-                    if pd.notna(df_fin.iloc[k, 1]) and status_pagamento and status_pagamento.lower() != "nan":
-                        jogadores_pagos.append({"nome": nome_atleta, "valor": status_pagamento})
+                    status_val = str(df_fin.iloc[k, 1]).strip() if len(df_fin.columns) > 1 else ""
+                    
+                    # Checa status de pagamento (se contem valor R$, sim, ok, ou se ta vazio/nao)
+                    if pd.notna(df_fin.iloc[k, 1]) and status_val and status_val.lower() not in ["nan", "não", "nao", "pendente", "0", "r$ 0,00"]:
+                        valor_pago = status_val if status_val.startswith("R$") else f"R$ {status_val}"
+                        jogadores_pagos.append({"nome": nome_atleta, "valor": valor_pago})
+                    else:
+                        jogadores_pendentes.append({"nome": nome_atleta, "status": "Pendente"})
                 break
-        
-        if not jogadores_pagos:
-            jogadores_pagos = [
-                {"nome": "Caio", "valor": "R$ 20,00"},
-                {"nome": "Emanoel Cjr", "valor": "R$ 20,00"}
-            ]
 
-        return entradas, gastos, saldo, jogadores_pagos
+        # 4. Leitura da Coluna H (Índice 7) para Tipo e Valor de Gastos Explicativos
+        if len(df_fin.columns) >= 8:
+            for i in range(len(df_fin)):
+                item_gasto = df_fin.iloc[i, 7]
+                if pd.notna(item_gasto):
+                    item_str = str(item_gasto).strip()
+                    if item_str.lower() not in ["gastos", "descrição", "tipo de gasto", "nan"]:
+                        # Tenta pegar valor associado na coluna ao lado (I/Índice 8) se existir
+                        val_gasto = str(df_fin.iloc[i, 8]).strip() if len(df_fin.columns) > 8 and pd.notna(df_fin.iloc[i, 8]) else ""
+                        lista_gastos_detalhada.append({"descricao": item_str, "valor": val_gasto})
+
+        return entradas, gastos, saldo, jogadores_pagos, jogadores_pendentes, lista_gastos_detalhada
+
     except Exception:
-        return "R$ 40,00", "R$ 0,00", "R$ 239,00", [
-            {"nome": "Caio", "valor": "R$ 20,00"},
-            {"nome": "Emanoel Cjr", "valor": "R$ 20,00"}
-        ]
+        return "R$ 80,00", "R$ 0,00", "R$ 168,44", [], [], []
 
 @st.cache_data(ttl=0)
 def load_player_stats():
@@ -731,7 +760,7 @@ header_code = f"""
 st.markdown(textwrap.dedent(header_code), unsafe_allow_html=True)
 
 # ==========================================
-# 6. LEITURA DE VITÓRIAS E EMPATES (PLANILHA ID: 1e9VpoNzzqYZlD8JFJxWLQiWhNw4AaKiycauCZDxAas0)
+# 6. CARDS SUPERIORES COM TEMPORIZADOR E PLACAR COMPLETO
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
@@ -743,7 +772,6 @@ empates = 0
 try:
     df_vitorias.columns = df_vitorias.columns.astype(str).str.strip()
     
-    # Busca dinamicamente por formato de Linhas ou Colunas na planilha
     for idx, row in df_vitorias.iterrows():
         row_str = " ".join([str(val) for val in row.values]).lower()
         nums = [int(val) for val in row if str(val).isdigit()]
@@ -755,7 +783,6 @@ try:
         elif ("empate" in row_str or "empates" in row_str) and nums:
             empates = nums[0]
 
-    # Mapeamento adicional para leitura via Cabeçalhos de Colunas
     for col in df_vitorias.columns:
         col_lower = col.lower()
         primeiro_valor = df_vitorias[col].dropna().iloc[0] if not df_vitorias[col].dropna().empty else None
@@ -1109,7 +1136,7 @@ try:
     # ==========================================
     # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
     # ==========================================
-    entradas, gastos, saldo_caixa, lista_pagos = load_financial_data()
+    entradas, gastos_b2, saldo_caixa, lista_pagos, lista_pendentes, detalhe_gastos = load_financial_data()
 
     card_financeiro_html = f"""
     <div class="financial-card">
@@ -1121,7 +1148,7 @@ try:
             </div>
             <div class="fin-item">
                 <div class="fin-label">📉 Gastos (Campo / Bolas / Coletes)</div>
-                <div class="fin-value-red">{gastos}</div>
+                <div class="fin-value-red">{gastos_b2}</div>
             </div>
             <div class="fin-item">
                 <div class="fin-label">💵 Saldo Atual em Caixa</div>
@@ -1132,15 +1159,41 @@ try:
     """
     st.markdown(textwrap.dedent(card_financeiro_html), unsafe_allow_html=True)
 
-    with st.expander("📋 Ver Atletas com Mensalidade Paga (Mês Atual)"):
-        if lista_pagos:
-            html_pagos = "".join([
-                f'<div class="paid-player-pill">✅ <b>{atleta["nome"]}</b> ({atleta["valor"]})</div>'
-                for atleta in lista_pagos
-            ])
-            st.markdown(f'<div style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0;">{html_pagos}</div>', unsafe_allow_html=True)
-        else:
-            st.info("Nenhum pagamento registrado até o momento para este mês.")
+    col_exp1, col_exp2 = st.columns(2)
+
+    with col_exp1:
+        with st.expander("📋 Status das Mensalidades (Mês Atual)"):
+            if lista_pagos or lista_pendentes:
+                st.markdown("##### ✅ **Atletas com Mensalidade Paga:**")
+                if lista_pagos:
+                    html_pagos = "".join([
+                        f'<div class="paid-player-pill">✅ <b>{atleta["nome"]}</b> ({atleta["valor"]})</div>'
+                        for atleta in lista_pagos
+                    ])
+                    st.markdown(f'<div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px;">{html_pagos}</div>', unsafe_allow_html=True)
+                else:
+                    st.info("Nenhum pagamento registrado.")
+
+                st.markdown("##### ❌ **Atletas com Mensalidade Pendente:**")
+                if lista_pendentes:
+                    html_pendentes = "".join([
+                        f'<div class="unpaid-player-pill">❌ <b>{atleta["nome"]}</b></div>'
+                        for atleta in lista_pendentes
+                    ])
+                    st.markdown(f'<div style="display: flex; flex-wrap: wrap; gap: 6px;">{html_pendentes}</div>', unsafe_allow_html=True)
+                else:
+                    st.success("Todos os atletas estão em dia!")
+            else:
+                st.info("Nenhum registro de mensalidade encontrado.")
+
+    with col_exp2:
+        with st.expander("📉 Ver Detalhamento de Gastos (Coluna H)"):
+            if detalhe_gastos:
+                df_g = pd.DataFrame(detalhe_gastos)
+                df_g.columns = ["Descrição do Gasto", "Valor"]
+                st.dataframe(df_g, use_container_width=True, hide_index=True)
+            else:
+                st.info("Nenhum gasto específico detalhado na Coluna H até o momento.")
 
 except Exception as e:
     st.error(f"Erro ao carregar dados das planilhas: {e}")
