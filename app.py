@@ -1187,7 +1187,7 @@ try:
                 st.info("Nenhum registro de mensalidade encontrado.")
 
     with col_exp2:
-        with st.expander("📉 Ver Detalhamento de Gastos (Coluna H)"):
+        with st.expander("📉 Ver Detalhamento de Gastos"):
             if detalhe_gastos:
                 df_g = pd.DataFrame(detalhe_gastos)
                 df_g.columns = ["Descrição do Gasto", "Valor"]
