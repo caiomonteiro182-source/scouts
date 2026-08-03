@@ -734,44 +734,49 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 def get_qr_code_html():
-    """Tenta carregar a imagem do QR Code via arquivo local ou via busca dinâmica no diretório."""
-    possiveis_arquivos = [
-        "IMG-20260803-WA0062.jpg",
-        "IMG-20260803-WA0062.png",
-        "IMG-20260803-WA0062.jpeg",
-        "1000517793.jpg",
-        "1000517793.png"
+    """Busca dinâmica robusta da imagem no repositório local e converte para base64"""
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # 1. Tenta o arquivo com nome exato fornecido
+    nome_especifico = "IMG-20260803-WA0062.jpg"
+    caminho_especifico = os.path.join(base_dir, nome_especifico)
+    
+    if os.path.exists(caminho_especifico):
+        b64_str = get_base64_of_bin_file(caminho_especifico)
+        return f'<img src="data:image/jpeg;base64,{b64_str}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
+
+    # 2. Varre todos os arquivos com padrão WA0062 ou com extensão de imagem na pasta
+    padroes_busca = [
+        os.path.join(base_dir, "*WA0062*"),
+        os.path.join(base_dir, "*.jpg"),
+        os.path.join(base_dir, "*.jpeg"),
+        os.path.join(base_dir, "*.png")
     ]
     
-    encontrado = None
-    for filename in possiveis_arquivos:
-        if os.path.exists(filename):
-            encontrado = filename
-            break
+    for padrao in padroes_busca:
+        arquivos = glob.glob(padrao)
+        for arquivo in arquivos:
+            # Ignora logo.png se houver
+            if "logo" in arquivo.lower():
+                continue
+            try:
+                b64_str = get_base64_of_bin_file(arquivo)
+                ext = arquivo.split('.')[-1].lower()
+                mime = "jpeg" if ext in ["jpg", "jpeg"] else "png"
+                return f'<img src="data:image/{mime};base64,{b64_str}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
+            except Exception:
+                pass
 
-    if not encontrado:
-        matches = glob.glob("*WA0062*") + glob.glob("*1000517793*") + glob.glob("*qr*") + glob.glob("*.jpg")
-        if matches:
-            encontrado = matches[0]
-
-    if encontrado:
-        try:
-            b64_str = get_base64_of_bin_file(encontrado)
-            ext = encontrado.split('.')[-1].lower()
-            mime = "jpeg" if ext in ["jpg", "jpeg"] else "png"
-            return f'<img src="data:image/{mime};base64,{b64_str}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
-        except Exception:
-            pass
-
-    # Fallback para o arquivo no repositório GitHub
-    github_raw_url = "https://raw.githubusercontent.com/caiow/futebol-castelo-branco/main/IMG-20260803-WA0062.jpg"
-    return f'<img src="{github_raw_url}" alt="QR Code Pix" style="width: 140px; height: 140px; border-radius: 10px; border: 3px solid #10B981; background: #fff; padding: 5px; object-fit: contain;">'
+    # 3. Exibição de placeholder visual no layout caso nenhuma imagem seja encontrada
+    return '<div style="width: 140px; height: 140px; border: 2px dashed #10B981; display: flex; align-items: center; justify-content: center; color: #10B981; border-radius: 10px; font-weight: 700; font-size: 13px; text-align: center;">📲 QR Code Pix</div>'
 
 # ==========================================
 # 5. CABEÇALHO OFICIAL
 # ==========================================
 try:
-    logo_base64 = get_base64_of_bin_file("logo.png")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    logo_path = os.path.join(base_dir, "logo.png")
+    logo_base64 = get_base64_of_bin_file(logo_path if os.path.exists(logo_path) else "logo.png")
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 140px; width: auto; object-fit: contain;">'
 except Exception:
     logo_html = '<h1 style="margin:0; font-size: 70px;">🛡️</h1>'
@@ -1246,4 +1251,3 @@ try:
 
 except Exception as e:
     st.error(f"Erro ao carregar dados das planilhas: {e}")
-                
