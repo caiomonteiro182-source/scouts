@@ -376,29 +376,6 @@ CUSTOM_CSS = """
         color: #F1F5F9;
         font-size: 13px;
     }
-
-    /* Container de Vídeos/Gols */
-    .goal-card {
-        background-color: #0F172A;
-        border: 1px solid #1E293B;
-        border-top: 3px solid #38BDF8;
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    .goal-card-title {
-        color: #FFFFFF;
-        font-size: 15px;
-        font-weight: 800;
-        margin-bottom: 4px;
-    }
-    .goal-card-subtitle {
-        color: #94A3B8;
-        font-size: 12px;
-        margin-bottom: 12px;
-        font-weight: 600;
-    }
 </style>
 """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
@@ -919,41 +896,21 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # NOVO: SEÇÃO DE VÍDEOS DOS GOLS
+    # SEÇÃO DE VÍDEOS DOS GOLS (APENAS PLAYERS)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
-    st.subheader("🎬 Vídeos dos Gols dos Últimos Jogos")
-    st.markdown("Confira abaixo os lances, golaços e melhores momentos gravados nas últimas rodadas:")
 
-    # Lista de vídeos dos gols (Altere os links do YouTube e descrições conforme necessário)
-    lista_gols = [
-        {
-            "titulo": "⚽ Golaço de Fora da Área - Caio",
-            "partida": "Bayern 2 x 3 Atlético (Última Rodada)",
-            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        },
-        {
-            "titulo": "🎯 Jogada Trabalhada & Finalização - Tavinho",
-            "partida": "Bayern 1 x 1 Atlético",
-            "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        }
+    # Substitua os links abaixo pelos links reais do YouTube quando fizer o upload
+    links_videos = [
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     ]
 
-    if lista_gols:
-        cols_gols = st.columns(2)
-        for idx, item in enumerate(lista_gols):
-            col_target = cols_gols[idx % 2]
-            with col_target:
-                st.markdown(
-                    f'<div class="goal-card">'
-                    f'<div class="goal-card-title">{item["titulo"]}</div>'
-                    f'<div class="goal-card-subtitle">📌 {item["partida"]}</div>'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-                st.video(item["url"])
-    else:
-        st.info("Nenhum vídeo cadastrado no momento.")
+    if links_videos:
+        cols_gols = st.columns(len(links_videos))
+        for idx, url in enumerate(links_videos):
+            with cols_gols[idx]:
+                st.video(url)
 
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
