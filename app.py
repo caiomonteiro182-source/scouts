@@ -381,40 +381,58 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. TICKER DESLIZANTE DO BRASILEIRÃO
+# 3. TICKER DESLIZANTE DO BRASILEIRÃO (DINÂMICO)
 # ==========================================
-@st.cache_data(ttl=1800)
+def extract_matches_from_cartola(partidas, clubes):
+    """Auxiliar para extrair e formatar resultados validando placares oficiais e em andamento."""
+    resultados = []
+    for p in partidas:
+        gols_m = p.get("placar_oficial_mandante") if p.get("placar_oficial_mandante") is not None else p.get("placar_mandante")
+        gols_v = p.get("placar_oficial_visitante") if p.get("placar_oficial_visitante") is not None else p.get("placar_visitante")
+
+        if gols_m is not None and gols_v is not None:
+            m_id = str(p.get("clube_casa_id"))
+            v_id = str(p.get("clube_visitante_id"))
+
+            nome_m = clubes.get(m_id, {}).get("nome", clubes.get(m_id, {}).get("apelido", "Mandante"))
+            nome_v = clubes.get(v_id, {}).get("nome", clubes.get(v_id, {}).get("apelido", "Visitante"))
+
+            resultados.append(f"{nome_m} {int(gols_m)} x {int(gols_v)} {nome_v}")
+    return resultados
+
+@st.cache_data(ttl=300)
 def get_brasileirao_results():
+    """
+    Busca os últimos resultados do Campeonato Brasileiro via API do CartolaFC.
+    Possui tratamento robusto para diferentes estados do placar e histórico de rodadas.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    
     try:
-        res = requests.get("https://api.cartolafc.globo.com/partidas", timeout=5).json()
+        url = "https://api.cartolafc.globo.com/partidas"
+        res = requests.get(url, headers=headers, timeout=6).json()
         partidas = res.get("partidas", [])
         clubes = res.get("clubes", {})
-        
-        resultados = []
-        for p in partidas:
-            if p.get("placar_oficial_mandante") is not None and p.get("placar_oficial_visitante") is not None:
-                m_id = str(p["clube_casa_id"])
-                v_id = str(p["clube_visitante_id"])
-                nome_m = clubes.get(m_id, {}).get("apelido", "Time")
-                nome_v = clubes.get(v_id, {}).get("apelido", "Time")
-                gols_m = p["placar_oficial_mandante"]
-                gols_v = p["placar_oficial_visitante"]
-                resultados.append(f"{nome_m} {gols_m} x {gols_v} {nome_v}")
+        rodada_atual = res.get("rodada", 1)
+
+        resultados = extract_matches_from_cartola(partidas, clubes)
+
+        # Se a rodada atual ainda não teve jogos finalizados, busca a rodada anterior
+        if not resultados and rodada_atual > 1:
+            url_anterior = f"https://api.cartolafc.globo.com/partidas/{rodada_atual - 1}"
+            res_anterior = requests.get(url_anterior, headers=headers, timeout=6).json()
+            partidas_ant = res_anterior.get("partidas", [])
+            clubes_ant = res_anterior.get("clubes", {})
+            resultados = extract_matches_from_cartola(partidas_ant, clubes_ant)
+
         if resultados:
             return resultados
     except Exception:
         pass
 
-    return [
-        "Vitória 0 x 4 Palmeiras",
-        "Coritiba 0 x 1 Cruzeiro",
-        "Internacional 1 x 1 Flamengo",
-        "Corinthians 0 x 0 Athletico-PR",
-        "Mirassol 2 x 1 Remo",
-        "Fluminense 0 x 0 Bahia",
-        "Cruzeiro 0 x 1 Botafogo",
-        "Palmeiras 1 x 2 Atlético-MG"
-    ]
+    return ["Aguardando atualização dos jogos do Brasileirão..."]
 
 jogos_br = get_brasileirao_results()
 items_html = "".join([f'<div class="ticker-item">⚽ <b>{jogo}</b></div> • ' for jogo in jogos_br])
@@ -900,7 +918,6 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
 
-    # Substitua os links abaixo pelos links reais do YouTube quando fizer o upload
     links_videos = [
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
         "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
@@ -1067,7 +1084,6 @@ with col_txt:
     </div>
     """, unsafe_allow_html=True)
     
-    # Campo para copiar a chave Pix com 1 clique
     st.code("43998397065", language="text")
 
 st.markdown("<br>", unsafe_allow_html=True)
