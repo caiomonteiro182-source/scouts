@@ -88,7 +88,7 @@ CUSTOM_CSS = """
         text-align: center !important;
     }
 
-    /* Banner do Cabeçalho Oficial */
+    /* Banner do Cabeçalho Oficial (DESKTOP) */
     .header-container {
         background: linear-gradient(135deg, #0B1B3D 0%, #152844 60%, #C8102E 100%);
         padding: 25px 40px;
@@ -101,6 +101,17 @@ CUSTOM_CSS = """
         margin-bottom: 20px;
         border-left: 6px solid #C8102E;
         text-align: left;
+    }
+
+    .header-logo {
+        height: 140px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .header-text-container {
+        display: flex;
+        flex-direction: column;
     }
 
     .header-title {
@@ -120,6 +131,35 @@ CUSTOM_CSS = """
         margin: 8px 0 0 0;
         text-transform: uppercase;
         letter-spacing: 1.5px;
+    }
+
+    /* AJUSTE EXCLUSIVO PARA SMARTPHONES (MOBILE) */
+    @media (max-width: 768px) {
+        .header-container {
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+            padding: 20px 15px !important;
+            gap: 15px !important;
+        }
+
+        .header-logo {
+            height: 110px !important;
+            margin-bottom: 5px !important;
+        }
+
+        .header-text-container {
+            align-items: center !important;
+            text-align: center !important;
+        }
+
+        .header-title {
+            font-size: 26px !important;
+        }
+
+        .header-subtitle {
+            font-size: 12px !important;
+        }
     }
 
     /* Cards Informativos Topo */
@@ -418,10 +458,6 @@ def extract_matches_from_cartola(partidas, clubes):
 
 @st.cache_data(ttl=300)
 def get_brasileirao_results():
-    """
-    Busca os últimos resultados do Campeonato Brasileiro via API do CartolaFC.
-    Possui tratamento robusto para diferentes estados do placar e histórico de rodadas.
-    """
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
@@ -435,7 +471,6 @@ def get_brasileirao_results():
 
         resultados = extract_matches_from_cartola(partidas, clubes)
 
-        # Se a rodada atual ainda não teve jogos finalizados, busca a rodada anterior
         if not resultados and rodada_atual > 1:
             url_anterior = f"https://api.cartolafc.globo.com/partidas/{rodada_atual - 1}"
             res_anterior = requests.get(url_anterior, headers=headers, timeout=6).json()
@@ -633,7 +668,6 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 def get_qr_code_file_path():
-    """Localiza o caminho físico do arquivo do QR Code na pasta raiz do repositório."""
     base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
     
     candidatos = [
@@ -654,14 +688,14 @@ def get_qr_code_file_path():
     return None
 
 # ==========================================
-# 5. CABEÇALHO OFICIAL
+# 5. CABEÇALHO OFICIAL (COM SUPORTE RESPONSIVO)
 # ==========================================
 try:
     base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
     logo_path = os.path.join(base_dir, "logo.png")
     if os.path.exists(logo_path):
         logo_base64 = get_base64_of_bin_file(logo_path)
-        logo_html = f'<img src="data:image/png;base64,{logo_base64}" style="height: 140px; width: auto; object-fit: contain;">'
+        logo_html = f'<img src="data:image/png;base64,{logo_base64}" class="header-logo">'
     else:
         logo_html = '<h1 style="margin:0; font-size: 70px;">🛡️</h1>'
 except Exception:
@@ -670,7 +704,7 @@ except Exception:
 header_code = f"""
 <div class="header-container">
     <div>{logo_html}</div>
-    <div>
+    <div class="header-text-container">
         <h1 class="header-title">FUTEBOL CASTELO BRANCO</h1>
         <p class="header-subtitle">PAINEL OFICIAL DE ESTATÍSTICAS • TEMPORADA 2026</p>
     </div>
