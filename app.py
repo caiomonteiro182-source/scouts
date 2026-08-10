@@ -1046,28 +1046,32 @@ elif opcao_aba == "⚔️ Duelo de Times":
         df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
         stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
         
-        col_bayern, col_empate, col_atletico = st.columns([2, 1, 2])
+        # Proporções iguais [1, 1, 1] para alinhar perfeitamente as alturas
+        col_bayern, col_empate, col_atletico = st.columns([1, 1, 1])
         df_b = stats_times[stats_times["Time"] == "Bayern de Madri"]
         df_a = stats_times[stats_times["Time"] == "Atlético de Paris"]
+
+        # Estilo base comum para parelhar altura e espaçamentos internos
+        card_style_base = "height: 180px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; border-radius: 12px; text-align: center;"
 
         with col_bayern:
             gols_b = df_b["Gols"].values[0] if not df_b.empty else 0
             ast_b = df_b["Assistências"].values[0] if not df_b.empty else 0
             card_b = (
-                f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; padding: 20px; border-radius: 12px; text-align: center;">'
-                f'<h2 style="color: #EF4444; margin: 0;">🔴 BAYERN</h2>'
-                f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_bayern} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
-                f'<p style="color: #CBD5E1; font-weight: 600;">{gols_b} Gols | {ast_b} Assistências</p>'
+                f'<div style="background-color: #3f0a14; border: 2px solid #C8102E; {card_style_base}">'
+                f'<h2 style="color: #EF4444; margin: 0; font-size: 20px;">🔴 BAYERN</h2>'
+                f'<h1 style="color: #FFF; font-size: 36px; margin: 0;">{vitorias_bayern} <span style="font-size: 14px;">VITÓRIAS</span></h1>'
+                f'<p style="color: #CBD5E1; font-weight: 600; margin: 0; font-size: 13px;">{gols_b} Gols | {ast_b} Assistências</p>'
                 f'</div>'
             )
             st.markdown(card_b, unsafe_allow_html=True)
 
         with col_empate:
             card_e = (
-                f'<div style="background-color: #1E293B; border: 2px solid #64748B; padding: 20px; border-radius: 12px; text-align: center;">'
-                f'<h2 style="color: #94A3B8; margin: 0;">🤝 EMPATES</h2>'
-                f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{empates}</h1>'
-                f'<p style="color: #CBD5E1; font-weight: 600;">Igualdades</p>'
+                f'<div style="background-color: #1E293B; border: 2px solid #64748B; {card_style_base}">'
+                f'<h2 style="color: #94A3B8; margin: 0; font-size: 20px;">🤝 EMPATES</h2>'
+                f'<h1 style="color: #FFF; font-size: 36px; margin: 0;">{empates}</h1>'
+                f'<p style="color: #CBD5E1; font-weight: 600; margin: 0; font-size: 13px;">Igualdades no Retrospecto</p>'
                 f'</div>'
             )
             st.markdown(card_e, unsafe_allow_html=True)
@@ -1076,10 +1080,10 @@ elif opcao_aba == "⚔️ Duelo de Times":
             gols_a = df_a["Gols"].values[0] if not df_a.empty else 0
             ast_a = df_a["Assistências"].values[0] if not df_a.empty else 0
             card_a = (
-                f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; padding: 20px; border-radius: 12px; text-align: center;">'
-                f'<h2 style="color: #38BDF8; margin: 0;">🔵 ATLÉTICO</h2>'
-                f'<h1 style="color: #FFF; font-size: 38px; margin: 10px 0;">{vitorias_atletico} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
-                f'<p style="color: #CBD5E1; font-weight: 600;">{gols_a} Gols | {ast_a} Assistências</p>'
+                f'<div style="background-color: #0A1E3F; border: 2px solid #38BDF8; {card_style_base}">'
+                f'<h2 style="color: #38BDF8; margin: 0; font-size: 20px;">🔵 ATLÉTICO</h2>'
+                f'<h1 style="color: #FFF; font-size: 36px; margin: 0;">{vitorias_atletico} <span style="font-size: 16px;">VITÓRIAS</span></h1>'
+                f'<p style="color: #CBD5E1; font-weight: 600; margin: 0; font-size: 13px;">{gols_a} Gols | {ast_a} Assistências</p>'
                 f'</div>'
             )
             st.markdown(card_a, unsafe_allow_html=True)
