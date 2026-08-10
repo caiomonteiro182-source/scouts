@@ -261,6 +261,22 @@ CUSTOM_CSS = """
         margin-top: 2px;
     }
 
+    /* Subtexto do Último Resultado no Card */
+    .pl-last-result {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
+        text-align: center;
+        font-size: 11px;
+        color: #94A3B8;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .pl-last-result b {
+        color: #00ff85;
+    }
+
     /* Cards de Métricas */
     .metric-card {
         background: #0F2144;
@@ -667,6 +683,7 @@ st.markdown(header_code, unsafe_allow_html=True)
 # ==========================================
 df_players = load_player_stats()
 df_vitorias = load_victories_stats()
+df_jogos_fcb = load_match_history()
 
 vitorias_bayern = 0
 vitorias_atletico = 0
@@ -698,6 +715,27 @@ try:
                 vitorias_atletico = val
             elif "empate" in col_lower:
                 empates = val
+except Exception:
+    pass
+
+# Extração dinâmica do ÚLTIMO JOGO da tabela
+texto_ultimo_jogo = "Sem registros recentes"
+try:
+    if not df_jogos_fcb.empty:
+        col_bayern = [c for c in df_jogos_fcb.columns if "vermelho" in c.lower() or "bayern" in c.lower()]
+        col_atletico = [c for c in df_jogos_fcb.columns if "azul" in c.lower() or "atlético" in c.lower() or "atletico" in c.lower()]
+        
+        if col_bayern and col_atletico:
+            df_validos = df_jogos_fcb.dropna(subset=[col_bayern[0], col_atletico[0]], how="all")
+            if not df_validos.empty:
+                ultimo_reg = df_validos.iloc[-1]
+                gols_b = int(pd.to_numeric(ultimo_reg[col_bayern[0]], errors='coerce') or 0)
+                gols_a = int(pd.to_numeric(ultimo_reg[col_atletico[0]], errors='coerce') or 0)
+                
+                col_data = [c for c in df_jogos_fcb.columns if "data" in c.lower() or "rodada" in c.lower() or "jogo" in c.lower()]
+                info_data = f" ({str(ultimo_reg[col_data[0]]).strip()})" if col_data and pd.notna(ultimo_reg[col_data[0]]) else ""
+                
+                texto_ultimo_jogo = f"Bayern <b>{gols_b} x {gols_a}</b> Atlético{info_data}"
 except Exception:
     pass
 
@@ -774,6 +812,7 @@ with col_placar:
         f'<span class="pl-team-badge badge-atletico"></span>'
         f'</div>'
         f'</div>'
+        f'<div class="pl-last-result">⚡ ÚLTIMO CONFRONTO: {texto_ultimo_jogo}</div>'
         f'</div>'
     )
     st.markdown(card_placar_html, unsafe_allow_html=True)
