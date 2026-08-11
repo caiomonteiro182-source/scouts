@@ -1001,10 +1001,18 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA (GRADE DE 2 POR LINHA)
+    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA (COM BOTÃO DE REFRESH INDIVIDUAL)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
-    st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
+    
+    # Alinhamento do Título e Botão de Atualização Lado a Lado
+    col_tit, col_btn = st.columns([3, 1])
+    with col_tit:
+        st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
+    with col_btn:
+        if st.button("🔄 Atualizar Vídeos", use_container_width=True):
+            load_gols_rodada.clear()
+            st.rerun()
 
     df_gols = load_gols_rodada()
 
@@ -1056,7 +1064,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
                 """
                 st.components.v1.html(embed_code1, height=330)
 
-            # Segundo vídeo da dupla (se houver um número ímpar no total)
+            # Segundo vídeo da dupla (se houver)
             if i + 1 < len(videos_encontrados):
                 with cols[1]:
                     vid2 = videos_encontrados[i + 1]
