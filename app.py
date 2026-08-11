@@ -4,6 +4,7 @@ import os
 import base64
 import requests
 import glob
+import re
 from datetime import datetime, timedelta
 
 # ==========================================
@@ -498,7 +499,7 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS PLANILHAS, CLIMA E DRIVE
 # ==========================================
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
@@ -514,6 +515,37 @@ URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?
 ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
 GID_FINANCEIRO = "1092123094"
 URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
+
+@st.cache_data(ttl=180)
+def get_drive_folder_videos(folder_id):
+    """
+    Busca e mapeia automaticamente os IDs e nomes dos arquivos de vídeo 
+    armazenados em uma pasta pública do Google Drive.
+    """
+    folder_url = f"https://drive.google.com/embeddedfolderview?id={folder_id}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    
+    videos = []
+    try:
+        res = requests.get(folder_url, headers=headers, timeout=10)
+        if res.status_code == 200:
+            # Captura a matriz de metadados dos arquivos incorporados na página
+            matches = re.findall(r'\["(1[a-zA-Z0-9_-]{28,34})",\["(.*?)"', res.text)
+            for f_id, f_name in matches:
+                # Tratamento de codificação para nomes com acentos ou caracteres especiais
+                try:
+                    clean_name = f_name.encode('utf-8').decode('unicode-escape').strip()
+                except Exception:
+                    clean_name = f_name.strip()
+                
+                if not any(v['id'] == f_id for v in videos):
+                    videos.append({"id": f_id, "nome": clean_name})
+    except Exception:
+        pass
+        
+    return videos
 
 @st.cache_data(ttl=60)
 def load_financial_data():
@@ -986,23 +1018,29 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS DOS GOLS (EXIBIÇÃO DIRETA DA PASTA DO DRIVE)
+    # SEÇÃO DE VÍDEOS DOS GOLS DA RODADA (PLAYERS NATIVOS)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
     st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
 
     FOLDER_ID = "1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH"
-    
-    # Embed direto da pasta do Google Drive em modo Grade (Grid)
-    iframe_folder = f"""
-    <iframe src="https://drive.google.com/embeddedfolderview?id={FOLDER_ID}#grid" 
-            width="100%" 
-            height="480" 
-            frameborder="0" 
-            style="border:1px solid #1E293B; border-radius:12px; background-color: #0F172A;">
-    </iframe>
-    """
-    st.components.v1.html(iframe_folder, height=490)
+    lista_videos = get_drive_folder_videos(FOLDER_ID)
+
+    if lista_videos:
+        # Exibe em colunas dinâmicas dependendo da quantidade de vídeos na pasta
+        num_cols = min(len(lista_videos), 2)
+        cols_vids = st.columns(num_cols)
+        
+        for idx, video in enumerate(lista_videos):
+            col_idx = idx % num_cols
+            with cols_vids[col_idx]:
+                st.markdown(f"**⚽ {video['nome']}**")
+                # URL oficial de streaming direto de arquivos MP4 do Google Drive
+                stream_url = f"https://drive.google.com/uc?export=download&id={video['id']}"
+                st.video(stream_url)
+    else:
+        st.info("Nenhum vídeo encontrado na pasta do Google Drive no momento.")
+        st.link_button("📂 Acessar Pasta de Vídeos no Google Drive", f"https://drive.google.com/drive/folders/{FOLDER_ID}")
 
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
