@@ -1001,7 +1001,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA
+    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA (GRADE DE 2 POR LINHA)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
     st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
@@ -1025,7 +1025,6 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
 
     videos_encontrados = []
     if not df_gols.empty:
-        # Identifica colunas flexivelmente
         col_titulo = [c for c in df_gols.columns if "titulo" in c.lower() or "título" in c.lower() or "nome" in c.lower() or "lance" in c.lower()]
         col_link = [c for c in df_gols.columns if "link" in c.lower() or "video" in c.lower() or "vídeo" in c.lower() or "url" in c.lower() or "drive" in c.lower()]
 
@@ -1039,21 +1038,38 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
                 videos_encontrados.append({"titulo": titulo, "id": f_id})
 
     if videos_encontrados:
-        num_cols = min(len(videos_encontrados), 2)
-        cols = st.columns(num_cols)
-        for idx, vid in enumerate(videos_encontrados):
-            with cols[idx % num_cols]:
-                st.markdown(f"**⚽ {vid['titulo']}**")
-                # Embed do player nativo do Google Drive via HTML components
-                embed_code = f"""
-                <iframe src="https://drive.google.com/file/d/{vid['id']}/preview" 
+        # Renderiza todos os vídeos cadastrados em duplas (2 colunas por linha)
+        for i in range(0, len(videos_encontrados), 2):
+            cols = st.columns(2)
+            
+            # Primeiro vídeo da dupla
+            with cols[0]:
+                vid1 = videos_encontrados[i]
+                st.markdown(f"**⚽ {vid1['titulo']}**")
+                embed_code1 = f"""
+                <iframe src="https://drive.google.com/file/d/{vid1['id']}/preview" 
                         width="100%" 
                         height="320" 
                         allow="autoplay; fullscreen" 
                         style="border:1px solid #1E293B; border-radius:12px; background-color:#000;">
                 </iframe>
                 """
-                st.components.v1.html(embed_code, height=330)
+                st.components.v1.html(embed_code1, height=330)
+
+            # Segundo vídeo da dupla (se houver um número ímpar no total)
+            if i + 1 < len(videos_encontrados):
+                with cols[1]:
+                    vid2 = videos_encontrados[i + 1]
+                    st.markdown(f"**⚽ {vid2['titulo']}**")
+                    embed_code2 = f"""
+                    <iframe src="https://drive.google.com/file/d/{vid2['id']}/preview" 
+                            width="100%" 
+                            height="320" 
+                            allow="autoplay; fullscreen" 
+                            style="border:1px solid #1E293B; border-radius:12px; background-color:#000;">
+                    </iframe>
+                    """
+                    st.components.v1.html(embed_code2, height=330)
     else:
         st.info("Nenhum vídeo cadastrado na planilha 'gols_rodada' até o momento.")
 
