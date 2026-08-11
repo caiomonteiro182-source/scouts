@@ -1001,7 +1001,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA (NATIVO RESPONSIVO)
+    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA (PLAYER HÍBRIDO TOTALMENTE COMPATÍVEL)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
     
@@ -1045,7 +1045,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
                 videos_encontrados.append({"titulo": titulo, "id": f_id})
 
     if videos_encontrados:
-        # Renderiza todos os vídeos cadastrados em duplas usando o player nativo otimizado para celulares
+        # Renderiza todos os vídeos cadastrados em duplas (2 colunas por linha)
         for i in range(0, len(videos_encontrados), 2):
             cols = st.columns(2)
             
@@ -1053,16 +1053,32 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
             with cols[0]:
                 vid1 = videos_encontrados[i]
                 st.markdown(f"**⚽ {vid1['titulo']}**")
-                url_stream1 = f"https://lh3.googleusercontent.com/u/0/d/{vid1['id']}"
-                st.video(url_stream1)
+                embed_code1 = f"""
+                <iframe src="https://drive.google.com/file/d/{vid1['id']}/preview" 
+                        width="100%" 
+                        height="320" 
+                        allow="autoplay; fullscreen" 
+                        style="border:1px solid #1E293B; border-radius:12px; background-color:#000;">
+                </iframe>
+                """
+                st.components.v1.html(embed_code1, height=330)
+                st.link_button("▶️ Abrir / Assistir Vídeo", f"https://drive.google.com/file/d/{vid1['id']}/view", use_container_width=True)
 
             # Segundo vídeo da dupla (se houver)
             if i + 1 < len(videos_encontrados):
                 with cols[1]:
                     vid2 = videos_encontrados[i + 1]
                     st.markdown(f"**⚽ {vid2['titulo']}**")
-                    url_stream2 = f"https://lh3.googleusercontent.com/u/0/d/{vid2['id']}"
-                    st.video(url_stream2)
+                    embed_code2 = f"""
+                    <iframe src="https://drive.google.com/file/d/{vid2['id']}/preview" 
+                            width="100%" 
+                            height="320" 
+                            allow="autoplay; fullscreen" 
+                            style="border:1px solid #1E293B; border-radius:12px; background-color:#000;">
+                    </iframe>
+                    """
+                    st.components.v1.html(embed_code2, height=330)
+                    st.link_button("▶️ Abrir / Assistir Vídeo", f"https://drive.google.com/file/d/{vid2['id']}/view", use_container_width=True)
     else:
         st.info("Nenhum vídeo cadastrado na planilha 'gols_rodada' até o momento.")
 
