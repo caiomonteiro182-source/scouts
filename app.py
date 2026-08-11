@@ -516,6 +516,10 @@ ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
 GID_FINANCEIRO = "1092123094"
 URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
 
+# PLANILHA DEDICADA DE VÍDEOS (GOLS_RODADA)
+ID_PLANILHA_GOLS = "1xrThBr83ehD7yPtPzaknTXiHtccFIaeQmm60HPdJXCA"
+URL_GOLS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_GOLS}/export?format=csv"
+
 @st.cache_data(ttl=60)
 def load_financial_data():
     try:
@@ -611,6 +615,16 @@ def load_match_history():
         return df_jogos
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
+
+@st.cache_data(ttl=60)
+def load_gols_rodada():
+    try:
+        df_gols = pd.read_csv(URL_GOLS)
+        df_gols = df_gols.dropna(how='all')
+        df_gols.columns = df_gols.columns.astype(str).str.strip()
+        return df_gols
+    except Exception:
+        return pd.DataFrame()
 
 @st.cache_data(ttl=3600)
 def get_next_saturday_weather():
@@ -980,70 +994,68 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     if cols_placar:
         df_historico_jogos = df_historico_jogos.dropna(subset=cols_placar, how="all")
 
-    # Exibe a tabela ocultando a coluna com os links brutos de vídeo
-    cols_exibicao = [c for c in df_historico_jogos.columns if "vídeo" not in c.lower() and "video" not in c.lower()]
     st.dataframe(
-        df_historico_jogos[cols_exibicao],
+        df_historico_jogos,
         use_container_width=True,
         hide_index=True
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS DOS GOLS (EXTRAI MÚLTIPLOS LANCES POR CÉLULA)
+    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
     st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
 
-    def extrair_todos_ids_drive(texto):
-        """Extrai todos os IDs válidos de arquivos do Drive presentes em um texto/célula."""
-        if pd.isna(texto) or not str(texto).strip():
-            return []
-        
-        texto_str = str(texto).strip()
-        
-        # Padrões de links comuns do Google Drive
-        ids_d = re.findall(r'/d/([a-zA-Z0-9_-]{25,50})', texto_str)
-        ids_id = re.findall(r'id=([a-zA-Z0-9_-]{25,50})', texto_str)
-        
-        encontrados = list(dict.fromkeys(ids_d + ids_id)) # Remove duplicadas preservando ordem
-        
-        # Caso a célula contenha diretamente IDs sem a URL completa
-        if not encontrados:
-            partes = re.split(r'[,\s\n]+', texto_str)
-            for p in partes:
-                p_clean = p.strip()
-                if len(p_clean) >= 25 and len(p_clean) <= 50 and '/' not in p_clean:
-                    encontrados.append(p_clean)
-                    
-        return encontrados
+    df_gols = load_gols_rodada()
 
-    col_vid = [c for c in df_historico_jogos.columns if "vídeo" in c.lower() or "video" in c.lower()]
-    
+    def extrair_id_drive(texto):
+        """Extrai o ID de arquivo do Drive a partir de qualquer link ou texto bruto."""
+        if pd.isna(texto) or not str(texto).strip():
+            return None
+        texto_str = str(texto).strip()
+        ids_d = re.findall(r'/d/([a-zA-Z0-9_-]{25,50})', texto_str)
+        if ids_d:
+            return ids_d[0]
+        ids_id = re.findall(r'id=([a-zA-Z0-9_-]{25,50})', texto_str)
+        if ids_id:
+            return ids_id[0]
+        if len(texto_str) >= 25 and len(texto_str) <= 50 and '/' not in texto_str:
+            return texto_str
+        return None
+
     videos_encontrados = []
-    if col_vid:
-        for idx, row in df_historico_jogos.iterrows():
-            celula_links = row[col_vid[0]]
-            list_ids = extrair_todos_ids_drive(celula_links)
-            
-            col_data = [c for c in df_historico_jogos.columns if "data" in c.lower() or "rodada" in c.lower() or "jogo" in c.lower()]
-            data_label = str(row[col_data[0]]).strip() if col_data and pd.notna(row[col_data[0]]) else f"Jogo {idx+1}"
-            
-            for sub_idx, f_id in enumerate(list_ids):
-                sufixo = f" - Lance {sub_idx+1}" if len(list_ids) > 1 else ""
-                titulo = f"⚽ Gol/Lance ({data_label}){sufixo}"
+    if not df_gols.empty:
+        # Identifica colunas flexivelmente
+        col_titulo = [c for c in df_gols.columns if "titulo" in c.lower() or "título" in c.lower() or "nome" in c.lower() or "lance" in c.lower()]
+        col_link = [c for c in df_gols.columns if "link" in c.lower() or "video" in c.lower() or "vídeo" in c.lower() or "url" in c.lower() or "drive" in c.lower()]
+
+        c_tit = col_titulo[0] if col_titulo else df_gols.columns[0]
+        c_lnk = col_link[0] if col_link else (df_gols.columns[1] if len(df_gols.columns) > 1 else df_gols.columns[0])
+
+        for idx, row in df_gols.iterrows():
+            f_id = extrair_id_drive(row[c_lnk])
+            if f_id:
+                titulo = str(row[c_tit]).strip() if pd.notna(row[c_tit]) else f"⚽ Lance {idx+1}"
                 videos_encontrados.append({"titulo": titulo, "id": f_id})
 
     if videos_encontrados:
-        # Exibe os vídeos em até 2 colunas responsivas
         num_cols = min(len(videos_encontrados), 2)
         cols = st.columns(num_cols)
         for idx, vid in enumerate(videos_encontrados):
             with cols[idx % num_cols]:
-                st.markdown(f"**{vid['titulo']}**")
-                # Player nativo direto do Streamlit (HTML5 sem pop-ups do Drive)
-                st.video(f"https://drive.google.com/uc?export=download&id={vid['id']}")
+                st.markdown(f"**⚽ {vid['titulo']}**")
+                # Embed do player nativo do Google Drive via HTML components
+                embed_code = f"""
+                <iframe src="https://drive.google.com/file/d/{vid['id']}/preview" 
+                        width="100%" 
+                        height="320" 
+                        allow="autoplay; fullscreen" 
+                        style="border:1px solid #1E293B; border-radius:12px; background-color:#000;">
+                </iframe>
+                """
+                st.components.v1.html(embed_code, height=330)
     else:
-        st.info("Nenhum link de vídeo cadastrado na coluna 'Vídeo' da planilha de jogos até o momento.")
+        st.info("Nenhum vídeo cadastrado na planilha 'gols_rodada' até o momento.")
 
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
