@@ -5,6 +5,7 @@ import base64
 import requests
 import glob
 from datetime import datetime, timedelta
+import streamlit.components.v1 as components
 
 # ==========================================
 # 1. CONFIGURAÇÃO DA PÁGINA
@@ -440,7 +441,6 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 # 3. TICKER DESLIZANTE DO BRASILEIRÃO (DINÂMICO)
 # ==========================================
 def extract_matches_from_cartola(partidas, clubes):
-    """Auxiliar para extrair e formatar resultados validando placares oficiais e em andamento."""
     resultados = []
     for p in partidas:
         gols_m = p.get("placar_oficial_mandante") if p.get("placar_oficial_mandante") is not None else p.get("placar_mandante")
@@ -516,7 +516,7 @@ ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
 GID_FINANCEIRO = "1092123094"
 URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
 
-@st.cache_data(ttl=0)
+@st.cache_data(ttl=60)
 def load_financial_data():
     try:
         df_fin = pd.read_csv(URL_FINANCEIRO, header=None)
@@ -576,7 +576,7 @@ def load_financial_data():
     except Exception:
         return "R$ 80,00", "R$ 0,00", "R$ 168,44", [], [], []
 
-@st.cache_data(ttl=0)
+@st.cache_data(ttl=60)
 def load_player_stats():
     df = pd.read_csv(URL_STATS, header=3)
     df = df.dropna(how='all')
@@ -595,14 +595,14 @@ def load_player_stats():
 
     return df
 
-@st.cache_data(ttl=0)
+@st.cache_data(ttl=60)
 def load_victories_stats():
     try:
         return pd.read_csv(URL_VITORIAS)
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv")
 
-@st.cache_data(ttl=0)
+@st.cache_data(ttl=60)
 def load_match_history():
     try:
         df_jogos = pd.read_csv(URL_JOGOS)
@@ -686,6 +686,21 @@ def get_qr_code_file_path():
         return matches[0]
         
     return None
+
+# Funções Utilitárias para Embed do Google Drive
+def get_drive_embed_url(file_id_or_url: str) -> str:
+    """Extrai o ID do arquivo do Google Drive e constrói a URL oficial de embed/preview."""
+    if "drive.google.com" in file_id_or_url:
+        if "/d/" in file_id_or_url:
+            file_id = file_id_or_url.split("/d/")[1].split("/")[0].split("?")[0]
+        elif "id=" in file_id_or_url:
+            file_id = file_id_or_url.split("id=")[1].split("&")[0]
+        else:
+            file_id = file_id_or_url
+    else:
+        file_id = file_id_or_url
+
+    return f"https://drive.google.com/file/d/{file_id}/preview"
 
 # ==========================================
 # 5. CABEÇALHO OFICIAL (COM SUPORTE RESPONSIVO)
@@ -987,20 +1002,32 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS DOS GOLS (APENAS PLAYERS)
+    # SEÇÃO DE VÍDEOS DOS GOLS DA RODADA (GOOGLE DRIVE EMBED)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
-
-    links_videos = [
-        "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-        "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
+    
+    # IMPORTANTE: Insira aqui os File IDs dos vídeos do Google Drive da pasta 1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH
+    # Exemplo: https://drive.google.com/file/d/1ABC123xyz_ID_DO_ARQUIVO/view -> Use apenas "1ABC123xyz_ID_DO_ARQUIVO" ou a URL completa
+    videos_drive = [
+        {"titulo": "⚽ Gol 1 - Destaques da Rodada", "id_ou_url": "1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH"}, 
+        {"titulo": "⚽ Gol 2 - Defesa & Contra-Ataque", "id_ou_url": "1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH"}
     ]
 
-    if links_videos:
-        cols_gols = st.columns(len(links_videos))
-        for idx, url in enumerate(links_videos):
-            with cols_gols[idx]:
-                st.video(url)
+    if videos_drive:
+        cols_vids = st.columns(len(videos_drive))
+        for idx, item in enumerate(videos_drive):
+            with cols_vids[idx]:
+                st.markdown(f"**{item['titulo']}**")
+                embed_link = get_drive_embed_url(item["id_ou_url"])
+                
+                # Player HTML Iframe do Google Drive
+                iframe_code = f"""
+                <iframe src="{embed_link}" width="100%" height="240" allow="autoplay" style="border:1px solid #1E293B; border-radius:8px;" frameborder="0"></iframe>
+                """
+                components.html(iframe_code, height=255)
+    else:
+        st.info("Nenhum vídeo cadastrado até o momento.")
 
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
@@ -1046,12 +1073,10 @@ elif opcao_aba == "⚔️ Duelo de Times":
         df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
         stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
         
-        # Proporções iguais [1, 1, 1] para alinhar perfeitamente as alturas
         col_bayern, col_empate, col_atletico = st.columns([1, 1, 1])
         df_b = stats_times[stats_times["Time"] == "Bayern de Madri"]
         df_a = stats_times[stats_times["Time"] == "Atlético de Paris"]
 
-        # Estilo base comum para parelhar altura e espaçamentos internos
         card_style_base = "height: 180px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px; border-radius: 12px; text-align: center;"
 
         with col_bayern:
