@@ -4,8 +4,8 @@ import os
 import base64
 import requests
 import glob
+import re
 from datetime import datetime, timedelta
-import streamlit.components.v1 as components
 
 # ==========================================
 # 1. CONFIGURAÇÃO DA PÁGINA
@@ -499,7 +499,7 @@ ticker_html = (
 st.markdown(ticker_html, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CARREGAMENTO DAS PLANILHAS E CLIMA
+# 4. CARREGAMENTO DAS PLANILHAS, CLIMA E DRIVE
 # ==========================================
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
@@ -515,6 +515,32 @@ URL_JOGOS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?
 ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
 GID_FINANCEIRO = "1092123094"
 URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
+
+@st.cache_data(ttl=300)
+def get_drive_folder_videos(folder_id):
+    """Busca dinamicamente todos os vídeos contidos na pasta pública do Google Drive."""
+    url = f"https://drive.google.com/embeddedfolderview?id={folder_id}#grid"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    
+    videos = []
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            pattern = r'id="entry-([a-zA-Z0-9_-]+)".*?class="entry-name">(.*?)</div>'
+            matches = re.findall(pattern, response.text, re.DOTALL)
+            
+            for file_id, file_name in matches:
+                clean_name = file_name.strip()
+                videos.append({
+                    "id": file_id,
+                    "nome": clean_name
+                })
+    except Exception:
+        pass
+        
+    return videos
 
 @st.cache_data(ttl=60)
 def load_financial_data():
@@ -686,21 +712,6 @@ def get_qr_code_file_path():
         return matches[0]
         
     return None
-
-# Funções Utilitárias para Embed do Google Drive
-def get_drive_embed_url(file_id_or_url: str) -> str:
-    """Extrai o ID do arquivo do Google Drive e constrói a URL oficial de embed/preview."""
-    if "drive.google.com" in file_id_or_url:
-        if "/d/" in file_id_or_url:
-            file_id = file_id_or_url.split("/d/")[1].split("/")[0].split("?")[0]
-        elif "id=" in file_id_or_url:
-            file_id = file_id_or_url.split("id=")[1].split("&")[0]
-        else:
-            file_id = file_id_or_url
-    else:
-        file_id = file_id_or_url
-
-    return f"https://drive.google.com/file/d/{file_id}/preview"
 
 # ==========================================
 # 5. CABEÇALHO OFICIAL (COM SUPORTE RESPONSIVO)
@@ -1002,32 +1013,25 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS DOS GOLS DA RODADA (GOOGLE DRIVE EMBED)
+    # SEÇÃO DE VÍDEOS DOS GOLS DA RODADA (BUSCA AUTOMÁTICA)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
     st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
     
-    # IMPORTANTE: Insira aqui os File IDs dos vídeos do Google Drive da pasta 1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH
-    # Exemplo: https://drive.google.com/file/d/1ABC123xyz_ID_DO_ARQUIVO/view -> Use apenas "1ABC123xyz_ID_DO_ARQUIVO" ou a URL completa
-    videos_drive = [
-        {"titulo": "⚽ Gol 1 - Destaques da Rodada", "id_ou_url": "1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH"}, 
-        {"titulo": "⚽ Gol 2 - Defesa & Contra-Ataque", "id_ou_url": "1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH"}
-    ]
+    FOLDER_ID = "1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH"
+    lista_videos = get_drive_folder_videos(FOLDER_ID)
 
-    if videos_drive:
-        cols_vids = st.columns(len(videos_drive))
-        for idx, item in enumerate(videos_drive):
-            with cols_vids[idx]:
-                st.markdown(f"**{item['titulo']}**")
-                embed_link = get_drive_embed_url(item["id_ou_url"])
-                
-                # Player HTML Iframe do Google Drive
-                iframe_code = f"""
-                <iframe src="{embed_link}" width="100%" height="240" allow="autoplay" style="border:1px solid #1E293B; border-radius:8px;" frameborder="0"></iframe>
-                """
-                components.html(iframe_code, height=255)
+    if lista_videos:
+        # Exibe em colunas responsivas (até 3 vídeos por linha)
+        cols_vids = st.columns(min(len(lista_videos), 3))
+        for idx, video in enumerate(lista_videos):
+            col_idx = idx % 3
+            with cols_vids[col_idx]:
+                st.markdown(f"**⚽ {video['nome']}**")
+                video_url = f"https://drive.google.com/uc?export=download&id={video['id']}"
+                st.video(video_url)
     else:
-        st.info("Nenhum vídeo cadastrado até o momento.")
+        st.info("Nenhum vídeo encontrado na pasta do Google Drive no momento.")
 
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
