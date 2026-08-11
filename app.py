@@ -986,36 +986,22 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS DOS GOLS DA RODADA (PLAYER DIRETO EMBUTIDO)
+    # SEÇÃO DE VÍDEOS DOS GOLS DA RODADA (EMBED DA PASTA - MODO LISTA)
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
     st.markdown("### 🎥 Gols e Melhores Momentos da Rodada")
 
-    # Lista de vídeos da sua pasta no Google Drive
-    # Sempre que subir um vídeo novo na pasta, adicione o ID dele e o título na lista abaixo
-    lista_videos = [
-        {
-            "titulo": "⚽ 3x0 - Gol Caio - Assistência...", 
-            "file_id": "1fF0Cj9cKjQZ2z5N8aU-Exemplo_Coloque_O_ID_Exato_Aqui"
-        }
-    ]
-
-    col_vid1, col_vid2 = st.columns(2)
+    FOLDER_ID = "1VlCjOXj2bvSJdZxP37HDPa0qwQmGUUEH"
     
-    for idx, vid in enumerate(lista_videos):
-        target_col = col_vid1 if idx % 2 == 0 else col_vid2
-        with target_col:
-            st.markdown(f"**{vid['titulo']}**")
-            # Player HTML5 responsivo do próprio vídeo do Google Drive (Dá Play diretamente dentro do site)
-            video_embed_html = f"""
-            <iframe src="https://drive.google.com/file/d/{vid['file_id']}/preview" 
-                    width="100%" 
-                    height="320" 
-                    allow="autoplay" 
-                    style="border: 1px solid #1E293B; border-radius: 10px; background-color: #000;">
-            </iframe>
-            """
-            st.components.v1.html(video_embed_html, height=330)
+    # Renderização da pasta em modo lista (#list) para permitir reprodução direta
+    folder_embed_html = f"""
+    <iframe src="https://drive.google.com/embeddedfolderview?id={FOLDER_ID}#list" 
+            width="100%" 
+            height="360" 
+            style="border:1px solid #1E293B; border-radius:12px; background-color:#0F172A;">
+    </iframe>
+    """
+    st.components.v1.html(folder_embed_html, height=370)
 
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
