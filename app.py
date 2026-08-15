@@ -1095,9 +1095,9 @@ elif opcao_aba == "👥 Elenco dos Times":
 
     elenco_atletico = {
         "Goleiros": ["Jonathan", "Matheus"],
-        "Zagueiros": ["Gabigol", "Wellington", "Joel"],
-        "Laterais": ["Caio", "Otero", "Cristoffer", "Jefferson"],
-        "Meias": ["Ian", "Juel", "Gabriel"],
+        "Zagueiros": ["Gabigol", "Wellington", "Cláudio"],
+        "Laterais": ["Otero", "Cristoffer", "Jefferson"],
+        "Meias": ["Ian", "Juel", "Gabriel", "Caio"],
         "Atacantes": ["Tavinho", "P.H", "Maradona"]
     }
 
