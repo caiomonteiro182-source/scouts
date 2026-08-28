@@ -37,7 +37,7 @@ CUSTOM_CSS = """
         color: #F1F5F9;
     }
 
-    /* Ticker Deslizante do Brasileirão */
+    /* Ticker Deslizante do FCB */
     .ticker-wrap {
         width: 100%;
         background: linear-gradient(90deg, #0A1329 0%, #0F172A 50%, #0A1329 100%);
@@ -438,68 +438,7 @@ CUSTOM_CSS = """
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
 # ==========================================
-# 3. TICKER DESLIZANTE DO BRASILEIRÃO (DINÂMICO)
-# ==========================================
-def extract_matches_from_cartola(partidas, clubes):
-    resultados = []
-    for p in partidas:
-        gols_m = p.get("placar_oficial_mandante") if p.get("placar_oficial_mandante") is not None else p.get("placar_mandante")
-        gols_v = p.get("placar_oficial_visitante") if p.get("placar_oficial_visitante") is not None else p.get("placar_visitante")
-
-        if gols_m is not None and gols_v is not None:
-            m_id = str(p.get("clube_casa_id"))
-            v_id = str(p.get("clube_visitante_id"))
-
-            nome_m = clubes.get(m_id, {}).get("nome", clubes.get(m_id, {}).get("apelido", "Mandante"))
-            nome_v = clubes.get(v_id, {}).get("nome", clubes.get(v_id, {}).get("apelido", "Visitante"))
-
-            resultados.append(f"{nome_m} {int(gols_m)} x {int(gols_v)} {nome_v}")
-    return resultados
-
-@st.cache_data(ttl=300)
-def get_brasileirao_results():
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-    
-    try:
-        url = "https://api.cartolafc.globo.com/partidas"
-        res = requests.get(url, headers=headers, timeout=6).json()
-        partidas = res.get("partidas", [])
-        clubes = res.get("clubes", {})
-        rodada_atual = res.get("rodada", 1)
-
-        resultados = extract_matches_from_cartola(partidas, clubes)
-
-        if not resultados and rodada_atual > 1:
-            url_anterior = f"https://api.cartolafc.globo.com/partidas/{rodada_atual - 1}"
-            res_anterior = requests.get(url_anterior, headers=headers, timeout=6).json()
-            partidas_ant = res_anterior.get("partidas", [])
-            clubes_ant = res_anterior.get("clubes", {})
-            resultados = extract_matches_from_cartola(partidas_ant, clubes_ant)
-
-        if resultados:
-            return resultados
-    except Exception:
-        pass
-
-    return ["Aguardando atualização dos jogos do Brasileirão..."]
-
-jogos_br = get_brasileirao_results()
-items_html = "".join([f'<div class="ticker-item">⚽ <b>{jogo}</b></div> • ' for jogo in jogos_br])
-
-ticker_html = (
-    f'<div class="ticker-wrap">'
-    f'<div class="ticker">'
-    f'<span style="color: #F59E0B; font-weight: 900; padding: 0 15px;">🇧🇷 BRASILEIRÃO (ÚLTIMOS RESULTADOS):</span>'
-    f'{items_html}'
-    f'</div>'
-    f'</div>'
-)
-st.markdown(ticker_html, unsafe_allow_html=True)
-
-# ==========================================
-# 4. CARREGAMENTO DAS PLANILHAS E CLIMA
+# 3. CARREGAMENTO DAS PLANILHAS E CLIMA
 # ==========================================
 ID_PLANILHA_STATS = "1E0wlg8BvOVdp_dk-dn1zw7HAhBh-cjhD269YBu-SkOQ"
 URL_STATS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_STATS}/export?format=csv"
@@ -520,6 +459,77 @@ URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIR
 ID_PLANILHA_GOLS = "1xrThBr83ehD7yPtPzaknTXiHtccFIaeQmm60HPdJXCA"
 URL_GOLS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_GOLS}/export?format=csv"
 
+@st.cache_data(ttl=60)
+def load_match_history():
+    try:
+        df_jogos = pd.read_csv(URL_JOGOS)
+        df_jogos = df_jogos.dropna(how='all')
+        df_jogos.columns = df_jogos.columns.str.strip()
+        return df_jogos
+    except Exception:
+        return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
+
+# ==========================================
+# TICKER DESLIZANTE DE JOGOS FCB (SUBSTITUIU O BRASILEIRÃO)
+# ==========================================
+@st.cache_data(ttl=60)
+def get_fcb_match_results():
+    try:
+        df_jogos = load_match_history()
+        if df_jogos.empty:
+            return ["Aguardando registro de jogos do FCB..."]
+
+        col_bayern = [c for c in df_jogos.columns if "vermelho" in c.lower() or "bayern" in c.lower()]
+        col_atletico = [c for c in df_jogos.columns if "azul" in c.lower() or "atlético" in c.lower() or "atletico" in c.lower()]
+        col_data = [c for c in df_jogos.columns if "data" in c.lower() or "rodada" in c.lower() or "jogo" in c.lower()]
+
+        if not col_bayern or not col_atletico:
+            return ["Formato de planilha não reconhecido."]
+
+        resultados = []
+        df_validos = df_jogos.dropna(subset=[col_bayern[0], col_atletico[0]], how="all")
+
+        for _, row in df_validos.iterrows():
+            gols_b_raw = row[col_bayern[0]]
+            gols_a_raw = row[col_atletico[0]]
+
+            if pd.notna(gols_b_raw) and pd.notna(gols_a_raw):
+                try:
+                    gols_b = int(float(gols_b_raw))
+                    gols_a = int(float(gols_a_raw))
+                    
+                    data_info = ""
+                    if col_data and pd.notna(row[col_data[0]]):
+                        data_info = f" ({str(row[col_data[0]]).strip()})"
+                    
+                    resultados.append(f"Bayern {gols_b} x {gols_a} Atlético{data_info}")
+                except ValueError:
+                    continue
+
+        if resultados:
+            # Exibir na ordem do mais recente para o mais antigo
+            return resultados[::-1]
+    except Exception:
+        pass
+
+    return ["Nenhum jogo registrado até o momento."]
+
+jogos_fcb_ticker = get_fcb_match_results()
+items_html = "".join([f'<div class="ticker-item">⚽ <b>{jogo}</b></div> • ' for jogo in jogos_fcb_ticker])
+
+ticker_html = (
+    f'<div class="ticker-wrap">'
+    f'<div class="ticker">'
+    f'<span style="color: #38BDF8; font-weight: 900; padding: 0 15px;">🛡️ RESULTADOS RECENTES FCB:</span>'
+    f'{items_html}'
+    f'</div>'
+    f'</div>'
+)
+st.markdown(ticker_html, unsafe_allow_html=True)
+
+# ==========================================
+# OUTROS CARREGAMENTOS DE DADOS
+# ==========================================
 @st.cache_data(ttl=60)
 def load_financial_data():
     try:
@@ -605,16 +615,6 @@ def load_victories_stats():
         return pd.read_csv(URL_VITORIAS)
     except Exception:
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_VITORIAS}/export?format=csv")
-
-@st.cache_data(ttl=60)
-def load_match_history():
-    try:
-        df_jogos = pd.read_csv(URL_JOGOS)
-        df_jogos = df_jogos.dropna(how='all')
-        df_jogos.columns = df_jogos.columns.str.strip()
-        return df_jogos
-    except Exception:
-        return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
 
 @st.cache_data(ttl=60)
 def load_gols_rodada():
@@ -1001,7 +1001,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     )
 
     # ------------------------------------------
-    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA (PLAYER HÍBRIDO TOTALMENTE COMPATÍVEL)
+    # SEÇÃO DE VÍDEOS PULL DIRETO DA PLANILHA GOLS_RODADA
     # ------------------------------------------
     st.markdown("<br><hr style='border:1px solid #1E293B;'><br>", unsafe_allow_html=True)
     
@@ -1016,7 +1016,6 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
     df_gols = load_gols_rodada()
 
     def extrair_id_drive(texto):
-        """Extrai o ID de arquivo do Drive a partir de qualquer link ou texto bruto."""
         if pd.isna(texto) or not str(texto).strip():
             return None
         texto_str = str(texto).strip()
@@ -1045,11 +1044,9 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
                 videos_encontrados.append({"titulo": titulo, "id": f_id})
 
     if videos_encontrados:
-        # Renderiza todos os vídeos cadastrados em duplas (2 colunas por linha)
         for i in range(0, len(videos_encontrados), 2):
             cols = st.columns(2)
             
-            # Primeiro vídeo da dupla
             with cols[0]:
                 vid1 = videos_encontrados[i]
                 st.markdown(f"**⚽ {vid1['titulo']}**")
@@ -1064,7 +1061,6 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
                 st.components.v1.html(embed_code1, height=330)
                 st.link_button("▶️ Abrir / Assistir Vídeo", f"https://drive.google.com/file/d/{vid1['id']}/view", use_container_width=True)
 
-            # Segundo vídeo da dupla (se houver)
             if i + 1 < len(videos_encontrados):
                 with cols[1]:
                     vid2 = videos_encontrados[i + 1]
