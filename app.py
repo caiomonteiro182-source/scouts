@@ -1095,6 +1095,10 @@ elif opcao_aba == "👥 Elenco dos Times":
             {"Jogador": "Maradona", "Numero": 15, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"}
         ])
 
+    # Garantir compatibilidade de sessão caso a coluna "Numero" ainda não exija no session_state antigo
+    if "Numero" not in st.session_state.elenco_jogadores.columns:
+        st.session_state.elenco_jogadores["Numero"] = 10
+
     with st.expander("⚙️ **Gerenciar Atletas (Adicionar, Editar e Excluir)**", expanded=False):
         tab_add, tab_edit, tab_del = st.tabs(["➕ Cadastrar Atleta", "✏️ Editar Atleta", "🗑️ Excluir Atleta"])
         
@@ -1166,7 +1170,7 @@ elif opcao_aba == "👥 Elenco dos Times":
                     jogador_del = st.selectbox("Selecione o Atleta para Remover:", todos_jogadores, key="del_sel")
                 with col_del2:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    if st.button("🗑️ Excluir Atleta", type="primary", use_container_width=True):
+                    if st.button("🗑️️ Excluir Atleta", type="primary", use_container_width=True):
                         st.session_state.elenco_jogadores = st.session_state.elenco_jogadores[
                             st.session_state.elenco_jogadores["Jogador"] != jogador_del
                         ].reset_index(drop=True)
