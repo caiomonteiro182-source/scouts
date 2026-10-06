@@ -368,7 +368,7 @@ CUSTOM_CSS = """
         border-radius: 12px;
         box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.5);
         display: flex;
-        flex-direction: column-reverse; /* Inverte para Goleiro ficar na base e Atacantes no topo */
+        flex-direction: column-reverse;
         justify-content: space-around;
         align-items: center;
         padding: 25px 10px;
@@ -376,7 +376,6 @@ CUSTOM_CSS = """
         margin-bottom: 20px;
     }
 
-    /* Linhas do Campo */
     .pitch-line-center {
         position: absolute;
         top: 50%;
@@ -434,7 +433,6 @@ CUSTOM_CSS = """
         width: 100%;
     }
 
-    /* Pílula Tática de Jogador */
     .pitch-player {
         background: rgba(15, 23, 42, 0.92);
         border: 1px solid rgba(255, 255, 255, 0.25);
@@ -474,6 +472,34 @@ CUSTOM_CSS = """
         border-radius: 8px;
         margin-bottom: 12px;
         font-weight: 900;
+    }
+
+    /* CARDS DAS REGRAS DO JOGO */
+    .rule-card {
+        background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+        border: 1px solid #334155;
+        border-left: 5px solid #C8102E;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .rule-title {
+        color: #38BDF8;
+        font-size: 15px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+
+    .rule-text {
+        color: #CBD5E1;
+        font-size: 13px;
+        line-height: 1.5;
+        font-weight: 500;
     }
 
     .paid-player-pill {
@@ -987,7 +1013,8 @@ opcao_aba = st.radio(
         "📅 Últimos Jogos FCB",
         "👥 Elenco dos Times",
         "⚔️ Duelo de Times",
-        "🏅 Top 3 Artilharia"
+        "🏅 Top 3 Artilharia",
+        "📜 Regras do Clube"
     ],
     horizontal=True,
     label_visibility="collapsed"
@@ -1262,12 +1289,9 @@ elif opcao_aba == "👥 Elenco dos Times":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ------------------------------------------
     # FUNÇÃO PARA GERAR O CAMPO DE FUTEBOL HTML
-    # ------------------------------------------
     def renderizar_campo_tatico(df_team, badge_class):
         posicoes_ordem = ["Goleiros", "Zagueiros", "Laterais", "Meias", "Atacantes"]
-        icones_pos = {"Goleiros": "🧤", "Zagueiros": "🛡️", "Laterais": "🏃‍♂️", "Meias": "🧠", "Atacantes": "⚡"}
 
         rows_html = ""
         for pos in posicoes_ordem:
@@ -1379,6 +1403,34 @@ elif opcao_aba == "🏅 Top 3 Artilharia":
                 f'</div>'
             )
             st.markdown(card_podio, unsafe_allow_html=True)
+
+elif opcao_aba == "📜 Regras do Clube":
+    st.subheader("📜 REGRAS FUTEBOL CASTELO BRANCO")
+
+    regras = [
+        ("🤝 Respeito", "Devemos respeitar uns aos outros, pois todos somos amigos e devemos respeito ao Juiz do Jogo."),
+        ("⚠️ Interpretação do Jogo", "Todas as entradas como 'carrinho' serão marcadas como FALTA e, dependendo do risco, será aplicado cartão azul, ou dependendo da gravidade o cartão vermelho."),
+        ("🟦 Cartão Azul", "Todos devem estar cientes de que não pode dar carrinho. Quem receber cartão azul ficará 3 minutos fora; após os 3 minutos, outro jogador entrará no lugar, poderá ser o mesmo jogador que tomou o azul."),
+        ("🎯 Faltas", "O time definirá quem baterá a falta."),
+        ("⚽ Pênaltis", "Qualquer jogador pode bater."),
+        ("📏 Barreira", "A distância da barreira será de 9 passos."),
+        ("🏃 Laterais", "Laterais com as mãos devem manter distância; laterais com os pés não precisam de distância."),
+        ("🧤 Goleiro", "O recuo da bola para o goleiro não poderá ser pego com as mãos."),
+        ("🛑 Agressão", "Qualquer agressão o atleta será removido do jogo.")
+    ]
+
+    col_r1, col_r2 = st.columns(2)
+
+    for idx, (titulo, desc) in enumerate(regras):
+        target_col = col_r1 if idx % 2 == 0 else col_r2
+        with target_col:
+            card_html = f"""
+            <div class="rule-card">
+                <div class="rule-title">{titulo}</div>
+                <div class="rule-text">{desc}</div>
+            </div>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
 
 # ==========================================
 # 9. SEÇÃO FINANCEIRA DO CLUBE (RODAPÉ)
