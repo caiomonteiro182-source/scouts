@@ -352,46 +352,128 @@ CUSTOM_CSS = """
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
 
-    /* Cards do Elenco */
-    .roster-card {
-        background-color: #0F172A;
+    /* ESTILO DO CAMPO DE FUTEBOL TÁTICO */
+    .pitch-container {
+        position: relative;
+        width: 100%;
+        min-height: 580px;
+        background: repeating-linear-gradient(
+            0deg,
+            #1e5128,
+            #1e5128 40px,
+            #194320 40px,
+            #194320 80px
+        );
+        border: 3px solid #ffffff;
         border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.5);
+        display: flex;
+        flex-direction: column-reverse; /* Inverte para Goleiro ficar na base e Atacantes no topo */
+        justify-content: space-around;
+        align-items: center;
+        padding: 25px 10px;
+        overflow: hidden;
         margin-bottom: 20px;
     }
-    .roster-header-vermelho {
-        border-bottom: 3px solid #C8102E;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-        color: #EF4444;
-        font-weight: 900;
+
+    /* Linhas do Campo */
+    .pitch-line-center {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: rgba(255, 255, 255, 0.4);
+        pointer-events: none;
     }
-    .roster-header-azul {
-        border-bottom: 3px solid #38BDF8;
-        padding-bottom: 10px;
-        margin-bottom: 15px;
-        color: #38BDF8;
-        font-weight: 900;
+
+    .pitch-circle-center {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 110px;
+        height: 110px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
     }
-    .pos-section-title {
-        color: #F1F5F9;
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        margin-top: 15px;
-        margin-bottom: 8px;
+
+    .pitch-box-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 180px;
+        height: 70px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-bottom: none;
+        transform: translateX(-50%);
+        pointer-events: none;
     }
-    .player-pill {
-        background: #1E293B;
-        color: #CBD5E1;
-        padding: 6px 14px;
+
+    .pitch-box-top {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 180px;
+        height: 70px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top: none;
+        transform: translateX(-50%);
+        pointer-events: none;
+    }
+
+    .pitch-row {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    /* Pílula Tática de Jogador */
+    .pitch-player {
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.25);
         border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        display: inline-block;
-        margin: 3px 2px;
-        border: 1px solid #334155;
+        padding: 5px 12px;
+        color: #FFFFFF;
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+    }
+
+    .pitch-badge-bayern {
+        background: #C8102E;
+        color: #FFFFFF;
+        padding: 2px 7px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 900;
+    }
+
+    .pitch-badge-atletico {
+        background: #0284C7;
+        color: #FFFFFF;
+        padding: 2px 7px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 900;
+    }
+
+    .roster-card-header {
+        text-align: center;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        font-weight: 900;
     }
 
     .paid-player-pill {
@@ -422,7 +504,6 @@ CUSTOM_CSS = """
         margin: 4px;
     }
 
-    /* Caixa Chave Pix */
     .pix-key-box {
         background-color: #0F172A;
         border: 1px dashed #10B981;
@@ -454,7 +535,6 @@ ID_PLANILHA_FINANCEIRO = "14y1z7KtpNIHui1jpFZFCNXQMAvGziotMf5P9FxL2wdA"
 GID_FINANCEIRO = "1092123094"
 URL_FINANCEIRO = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_FINANCEIRO}/export?format=csv&gid={GID_FINANCEIRO}"
 
-# PLANILHA DEDICADA DE VÍDEOS (GOLS_RODADA)
 ID_PLANILHA_GOLS = "1xrThBr83ehD7yPtPzaknTXiHtccFIaeQmm60HPdJXCA"
 URL_GOLS = f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_GOLS}/export?format=csv"
 
@@ -654,7 +734,7 @@ def get_next_saturday_weather():
             if wcode == 0:
                 icon = "☀️ Céu Limpo"
             elif wcode in [1, 2, 3]:
-                icon = "⛅ Parcialmente Nublado" if wcode in [1, 2] else "☁️️ Nublado"
+                icon = "⛅ Parcialmente Nublado" if wcode in [1, 2] else "☁ Nublado"
             elif wcode in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
                 icon = "🌧️ Chuva"
             elif wcode in [95, 96, 99]:
@@ -1036,7 +1116,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
                 </iframe>
                 """
                 st.components.v1.html(embed_code1, height=330)
-                st.link_button("▶️️ Abrir / Assistir Vídeo", f"https://drive.google.com/file/d/{vid1['id']}/view", use_container_width=True)
+                st.link_button("▶ Abrir / Assistir Vídeo", f"https://drive.google.com/file/d/{vid1['id']}/view", use_container_width=True)
 
             if i + 1 < len(videos_encontrados):
                 with cols[1]:
@@ -1056,7 +1136,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
         st.info("Nenhum vídeo cadastrado na planilha 'gols_rodada' até o momento.")
 
 elif opcao_aba == "👥 Elenco dos Times":
-    st.subheader("👥 Elenco Oficial dos Times")
+    st.subheader("👥 Disposição Tática nos Campos")
 
     if "elenco_jogadores" not in st.session_state:
         st.session_state.elenco_jogadores = pd.DataFrame([
@@ -1064,38 +1144,39 @@ elif opcao_aba == "👥 Elenco dos Times":
             {"Jogador": "Vozinha", "Numero": 1, "Time": "🔴 Bayern de Madri", "Posição": "Goleiros"},
             {"Jogador": "Nilton", "Numero": 3, "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
             {"Jogador": "Carlão (TCR)", "Numero": 4, "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
-            {"Jogador": "Camarão Sergipano", "Numero": 5, "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
             {"Jogador": "Paulo Base", "Numero": 2, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
-            {"Jogador": "Samuel", "Numero": 6, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
             {"Jogador": "Cezar", "Numero": 13, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
             {"Jogador": "Gledson", "Numero": 14, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
-            {"Jogador": "Cassiano", "Numero": 8, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Alessandro", "Numero": 10, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Mateus Rocha", "Numero": 11, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Diego (Lucas Lima)", "Numero": 15, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Cristiano", "Numero": 16, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Manoel", "Numero": 18, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Nata", "Numero": 7, "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
+            {"Jogador": "Cláudio", "Numero": 69, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Camarão Sergipano", "Numero": 70, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Cassiano", "Numero": 33, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Alessandro", "Numero": 31, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Mateus Rocha", "Numero": 7, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Diego (Lucas Lima)", "Numero": 20, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Cristiano", "Numero": 10, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Manoel", "Numero": 26, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Wesley", "Numero": 30, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Nata", "Numero": 99, "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
             {"Jogador": "Izaqui", "Numero": 9, "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
             # ATLÉTICO DE PARIS
             {"Jogador": "Jonathan", "Numero": 1, "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
-            {"Jogador": "Matheus", "Numero": 12, "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
-            {"Jogador": "Gabigol", "Numero": 3, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
-            {"Jogador": "Wellington", "Numero": 4, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
-            {"Jogador": "Cláudio", "Numero": 5, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
-            {"Jogador": "Otero", "Numero": 2, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
-            {"Jogador": "Cristoffer", "Numero": 6, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
-            {"Jogador": "Jefferson", "Numero": 13, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
-            {"Jogador": "Ian", "Numero": 8, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Juel", "Numero": 10, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Gabriel", "Numero": 11, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Caio", "Numero": 14, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Tavinho", "Numero": 7, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
-            {"Jogador": "P.H", "Numero": 9, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
-            {"Jogador": "Maradona", "Numero": 15, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"}
+            {"Jogador": "Mateus Ar Condicionado", "Numero": 22, "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
+            {"Jogador": "Wellington", "Numero": 99, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "P.H", "Numero": 31, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "Samuel", "Numero": 13, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Otero", "Numero": 17, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Cristoffer", "Numero": 2, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Jefferson", "Numero": 23, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Ian", "Numero": 30, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Juel", "Numero": 8, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Gabriel", "Numero": 26, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Caio", "Numero": 7, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Renan", "Numero": 20, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Mateus Barbosa", "Numero": 10, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Tavinho", "Numero": 9, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
+            {"Jogador": "Maradona", "Numero": 19, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"}
         ])
 
-    # Garantir compatibilidade de sessão caso a coluna "Numero" ainda não exija no session_state antigo
     if "Numero" not in st.session_state.elenco_jogadores.columns:
         st.session_state.elenco_jogadores["Numero"] = 10
 
@@ -1170,7 +1251,7 @@ elif opcao_aba == "👥 Elenco dos Times":
                     jogador_del = st.selectbox("Selecione o Atleta para Remover:", todos_jogadores, key="del_sel")
                 with col_del2:
                     st.markdown("<br>", unsafe_allow_html=True)
-                    if st.button("🗑️️ Excluir Atleta", type="primary", use_container_width=True):
+                    if st.button("🗑️ Excluir Atleta", type="primary", use_container_width=True):
                         st.session_state.elenco_jogadores = st.session_state.elenco_jogadores[
                             st.session_state.elenco_jogadores["Jogador"] != jogador_del
                         ].reset_index(drop=True)
@@ -1181,32 +1262,54 @@ elif opcao_aba == "👥 Elenco dos Times":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
+    # ------------------------------------------
+    # FUNÇÃO PARA GERAR O CAMPO DE FUTEBOL HTML
+    # ------------------------------------------
+    def renderizar_campo_tatico(df_team, badge_class):
+        posicoes_ordem = ["Goleiros", "Zagueiros", "Laterais", "Meias", "Atacantes"]
+        icones_pos = {"Goleiros": "🧤", "Zagueiros": "🛡️", "Laterais": "🏃‍♂️", "Meias": "🧠", "Atacantes": "⚡"}
+
+        rows_html = ""
+        for pos in posicoes_ordem:
+            df_pos = df_team[df_team["Posição"] == pos]
+            if not df_pos.empty:
+                players_html = ""
+                for _, row in df_pos.iterrows():
+                    num = int(row["Numero"]) if pd.notna(row["Numero"]) else 0
+                    nome = row["Jogador"]
+                    players_html += f"""
+                    <div class="pitch-player">
+                        <span class="{badge_class}">#{num}</span>
+                        <span>{nome}</span>
+                    </div>
+                    """
+                rows_html += f'<div class="pitch-row">{players_html}</div>'
+
+        field_html = f"""
+        <div class="pitch-container">
+            <div class="pitch-line-center"></div>
+            <div class="pitch-circle-center"></div>
+            <div class="pitch-box-bottom"></div>
+            <div class="pitch-box-top"></div>
+            {rows_html}
+        </div>
+        """
+        return field_html
+
     df_elenco = st.session_state.elenco_jogadores
     col_bayern, col_atletico = st.columns(2)
-    icones_pos = {"Goleiros": "🧤", "Zagueiros": "🛡️", "Laterais": "🏃‍♂️", "Meias": "🧠", "Atacantes": "⚡"}
-    posicoes_ordem = ["Goleiros", "Zagueiros", "Laterais", "Meias", "Atacantes"]
 
     with col_bayern:
-        st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 BAYERN DE MADRI</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="roster-card-header" style="background:#3f0a14; border:2px solid #C8102E; color:#EF4444;">🔴 BAYERN DE MADRI</div>', unsafe_allow_html=True)
         df_bayern = df_elenco[df_elenco["Time"] == "🔴 Bayern de Madri"]
-        for pos in posicoes_ordem:
-            df_pos = df_bayern[df_bayern["Posição"] == pos]
-            if not df_pos.empty:
-                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-                pills_html = "".join([f'<span class="player-pill">#{int(row["Numero"])} {row["Jogador"]}</span>' for _, row in df_pos.iterrows()])
-                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        html_bayern = renderizar_campo_tatico(df_bayern, "pitch-badge-bayern")
+        st.markdown(html_bayern, unsafe_allow_html=True)
 
     with col_atletico:
-        st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 ATLÉTICO DE PARIS</h2></div>', unsafe_allow_html=True)
+        st.markdown('<div class="roster-card-header" style="background:#0A1E3F; border:2px solid #38BDF8; color:#38BDF8;">🔵 ATLÉTICO DE PARIS</div>', unsafe_allow_html=True)
         df_atletico = df_elenco[df_elenco["Time"] == "🔵 Atlético de Paris"]
-        for pos in posicoes_ordem:
-            df_pos = df_atletico[df_atletico["Posição"] == pos]
-            if not df_pos.empty:
-                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-                pills_html = "".join([f'<span class="player-pill">#{int(row["Numero"])} {row["Jogador"]}</span>' for _, row in df_pos.iterrows()])
-                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        html_atletico = renderizar_campo_tatico(df_atletico, "pitch-badge-atletico")
+        st.markdown(html_atletico, unsafe_allow_html=True)
 
 elif opcao_aba == "⚔️ Duelo de Times":
     st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
