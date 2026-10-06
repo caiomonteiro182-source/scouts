@@ -356,7 +356,7 @@ CUSTOM_CSS = """
     .pitch-container {
         position: relative;
         width: 100%;
-        min-height: 580px;
+        min-height: 600px;
         background: repeating-linear-gradient(
             0deg,
             #1e5128,
@@ -428,7 +428,7 @@ CUSTOM_CSS = """
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
         width: 100%;
     }
@@ -764,7 +764,7 @@ def get_next_saturday_weather():
             elif wcode in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
                 icon = "🌧️ Chuva"
             elif wcode in [95, 96, 99]:
-                icon = "⛈️ Tempestade"
+                icon = "⛈️️ Tempestade"
             else:
                 icon = "🌤️ Tempo Bom"
 
