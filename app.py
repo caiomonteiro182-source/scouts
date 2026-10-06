@@ -1081,43 +1081,106 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
 
-    elenco_bayern = {
-        "Goleiros": ["Vozinha"],
-        "Zagueiros": ["Nilton", "Carlão (TCR)", "Camarão Sergipano"],
-        "Laterais": ["Paulo Base", "Samuel", "Cezar", "Gledson"],
-        "Meias": ["Cassiano", "Alessandro", "Mateus Rocha", "Diego (Lucas Lima)", "Cristiano", "Manoel"],
-        "Atacantes": ["Nata", "Izaqui"]
-    }
+    # 1. Inicializar o elenco no session_state caso ainda não exista
+    if "elenco_jogadores" not in st.session_state:
+        st.session_state.elenco_jogadores = pd.DataFrame([
+            # BAYERN DE MADRI
+            {"Jogador": "Vozinha", "Time": "🔴 Bayern de Madri", "Posição": "Goleiros"},
+            {"Jogador": "Nilton", "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
+            {"Jogador": "Carlão (TCR)", "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
+            {"Jogador": "Camarão Sergipano", "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
+            {"Jogador": "Paulo Base", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Samuel", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Cezar", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Gledson", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Cassiano", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Alessandro", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Mateus Rocha", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Diego (Lucas Lima)", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Cristiano", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Manoel", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Nata", "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
+            {"Jogador": "Izaqui", "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
+            # ATLÉTICO DE PARIS
+            {"Jogador": "Jonathan", "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
+            {"Jogador": "Matheus", "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
+            {"Jogador": "Gabigol", "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "Wellington", "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "Cláudio", "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "Otero", "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Cristoffer", "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Jefferson", "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Ian", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Juel", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Gabriel", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Caio", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Tavinho", "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
+            {"Jogador": "P.H", "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
+            {"Jogador": "Maradona", "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"}
+        ])
 
-    elenco_atletico = {
-        "Goleiros": ["Jonathan", "Matheus"],
-        "Zagueiros": ["Gabigol", "Wellington", "Cláudio"],
-        "Laterais": ["Otero", "Cristoffer", "Jefferson"],
-        "Meias": ["Ian", "Juel", "Gabriel", "Caio"],
-        "Atacantes": ["Tavinho", "P.H", "Maradona"]
-    }
+    # 2. Painel expansível de Edição Rápida de Atleta
+    with st.expander("⚙️️ **Editar Time / Posição de um Jogador**", expanded=False):
+        c_edit1, c_edit2, c_edit3 = st.columns(3)
+        
+        todos_jogadores = sorted(st.session_state.elenco_jogadores["Jogador"].tolist())
+        
+        with c_edit1:
+            jogador_sel = st.selectbox("Selecione o Atleta:", todos_jogadores)
+            
+        dados_atuais = st.session_state.elenco_jogadores[st.session_state.elenco_jogadores["Jogador"] == jogador_sel].iloc[0]
+        
+        opcoes_times = ["🔴 Bayern de Madri", "🔵 Atlético de Paris"]
+        opcoes_posicoes = ["Goleiros", "Zagueiros", "Laterais", "Meias", "Atacantes"]
+        
+        idx_time = opcoes_times.index(dados_atuais["Time"]) if dados_atuais["Time"] in opcoes_times else 0
+        idx_pos = opcoes_posicoes.index(dados_atuais["Posição"]) if dados_atuais["Posição"] in opcoes_posicoes else 0
+        
+        with c_edit2:
+            novo_time = st.selectbox("Novo Time:", opcoes_times, index=idx_time)
+            
+        with c_edit3:
+            nova_posicao = st.selectbox("Nova Posição:", opcoes_posicoes, index=idx_pos)
 
+        if st.button("💾 Salvar Alteração", use_container_width=True):
+            mask = st.session_state.elenco_jogadores["Jogador"] == jogador_sel
+            st.session_state.elenco_jogadores.loc[mask, "Time"] = novo_time
+            st.session_state.elenco_jogadores.loc[mask, "Posição"] = nova_posicao
+            st.success(f"✅ {jogador_sel} atualizado com sucesso para {novo_time} ({nova_posicao})!")
+            st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # 3. Exibição dos Cards dos Elencos
+    df_elenco = st.session_state.elenco_jogadores
     col_bayern, col_atletico = st.columns(2)
     icones_pos = {"Goleiros": "🧤", "Zagueiros": "🛡️", "Laterais": "🏃‍♂️", "Meias": "🧠", "Atacantes": "⚡"}
+    posicoes_ordem = ["Goleiros", "Zagueiros", "Laterais", "Meias", "Atacantes"]
 
     with col_bayern:
         st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 BAYERN DE MADRI</h2></div>', unsafe_allow_html=True)
-        for pos, jogadores in elenco_bayern.items():
-            st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-            pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
-            st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+        df_bayern = df_elenco[df_elenco["Time"] == "🔴 Bayern de Madri"]
+        for pos in posicoes_ordem:
+            jogadores = df_bayern[df_bayern["Posição"] == pos]["Jogador"].tolist()
+            if jogadores:
+                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_atletico:
         st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 ATLÉTICO DE PARIS</h2></div>', unsafe_allow_html=True)
-        for pos, jogadores in elenco_atletico.items():
-            st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-            pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
-            st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
+        df_atletico = df_elenco[df_elenco["Time"] == "🔵 Atlético de Paris"]
+        for pos in posicoes_ordem:
+            jogadores = df_atletico[df_atletico["Posição"] == pos]["Jogador"].tolist()
+            if jogadores:
+                st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
+                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif opcao_aba == "⚔️ Duelo de Times":
-    st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
+    st.subheader("⚔️️ Comparativo: Bayern de Madri vs Atlético de Paris")
     if "Time" in df_players.columns:
         df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
         stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
