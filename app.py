@@ -654,7 +654,7 @@ def get_next_saturday_weather():
             if wcode == 0:
                 icon = "☀️ Céu Limpo"
             elif wcode in [1, 2, 3]:
-                icon = "⛅ Parcialmente Nublado" if wcode in [1, 2] else "☁️ Nublado"
+                icon = "⛅ Parcialmente Nublado" if wcode in [1, 2] else "☁️️ Nublado"
             elif wcode in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
                 icon = "🌧️ Chuva"
             elif wcode in [95, 96, 99]:
@@ -1036,7 +1036,7 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
                 </iframe>
                 """
                 st.components.v1.html(embed_code1, height=330)
-                st.link_button("▶️ Abrir / Assistir Vídeo", f"https://drive.google.com/file/d/{vid1['id']}/view", use_container_width=True)
+                st.link_button("▶️️ Abrir / Assistir Vídeo", f"https://drive.google.com/file/d/{vid1['id']}/view", use_container_width=True)
 
             if i + 1 < len(videos_encontrados):
                 with cols[1]:
@@ -1061,38 +1061,38 @@ elif opcao_aba == "👥 Elenco dos Times":
     if "elenco_jogadores" not in st.session_state:
         st.session_state.elenco_jogadores = pd.DataFrame([
             # BAYERN DE MADRI
-            {"Jogador": "Vozinha", "Time": "🔴 Bayern de Madri", "Posição": "Goleiros"},
-            {"Jogador": "Nilton", "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
-            {"Jogador": "Carlão (TCR)", "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
-            {"Jogador": "Camarão Sergipano", "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
-            {"Jogador": "Paulo Base", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
-            {"Jogador": "Samuel", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
-            {"Jogador": "Cezar", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
-            {"Jogador": "Gledson", "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
-            {"Jogador": "Cassiano", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Alessandro", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Mateus Rocha", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Diego (Lucas Lima)", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Cristiano", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Manoel", "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
-            {"Jogador": "Nata", "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
-            {"Jogador": "Izaqui", "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
+            {"Jogador": "Vozinha", "Numero": 1, "Time": "🔴 Bayern de Madri", "Posição": "Goleiros"},
+            {"Jogador": "Nilton", "Numero": 3, "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
+            {"Jogador": "Carlão (TCR)", "Numero": 4, "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
+            {"Jogador": "Camarão Sergipano", "Numero": 5, "Time": "🔴 Bayern de Madri", "Posição": "Zagueiros"},
+            {"Jogador": "Paulo Base", "Numero": 2, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Samuel", "Numero": 6, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Cezar", "Numero": 13, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Gledson", "Numero": 14, "Time": "🔴 Bayern de Madri", "Posição": "Laterais"},
+            {"Jogador": "Cassiano", "Numero": 8, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Alessandro", "Numero": 10, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Mateus Rocha", "Numero": 11, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Diego (Lucas Lima)", "Numero": 15, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Cristiano", "Numero": 16, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Manoel", "Numero": 18, "Time": "🔴 Bayern de Madri", "Posição": "Meias"},
+            {"Jogador": "Nata", "Numero": 7, "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
+            {"Jogador": "Izaqui", "Numero": 9, "Time": "🔴 Bayern de Madri", "Posição": "Atacantes"},
             # ATLÉTICO DE PARIS
-            {"Jogador": "Jonathan", "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
-            {"Jogador": "Matheus", "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
-            {"Jogador": "Gabigol", "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
-            {"Jogador": "Wellington", "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
-            {"Jogador": "Cláudio", "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
-            {"Jogador": "Otero", "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
-            {"Jogador": "Cristoffer", "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
-            {"Jogador": "Jefferson", "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
-            {"Jogador": "Ian", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Juel", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Gabriel", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Caio", "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
-            {"Jogador": "Tavinho", "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
-            {"Jogador": "P.H", "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
-            {"Jogador": "Maradona", "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"}
+            {"Jogador": "Jonathan", "Numero": 1, "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
+            {"Jogador": "Matheus", "Numero": 12, "Time": "🔵 Atlético de Paris", "Posição": "Goleiros"},
+            {"Jogador": "Gabigol", "Numero": 3, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "Wellington", "Numero": 4, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "Cláudio", "Numero": 5, "Time": "🔵 Atlético de Paris", "Posição": "Zagueiros"},
+            {"Jogador": "Otero", "Numero": 2, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Cristoffer", "Numero": 6, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Jefferson", "Numero": 13, "Time": "🔵 Atlético de Paris", "Posição": "Laterais"},
+            {"Jogador": "Ian", "Numero": 8, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Juel", "Numero": 10, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Gabriel", "Numero": 11, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Caio", "Numero": 14, "Time": "🔵 Atlético de Paris", "Posição": "Meias"},
+            {"Jogador": "Tavinho", "Numero": 7, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
+            {"Jogador": "P.H", "Numero": 9, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"},
+            {"Jogador": "Maradona", "Numero": 15, "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"}
         ])
 
     with st.expander("⚙️ **Gerenciar Atletas (Adicionar, Editar e Excluir)**", expanded=False):
@@ -1103,12 +1103,14 @@ elif opcao_aba == "👥 Elenco dos Times":
 
         # TAB 1: CADASTRAR JOGADOR
         with tab_add:
-            c_add1, c_add2, c_add3 = st.columns(3)
+            c_add1, c_add2, c_add3, c_add4 = st.columns([2, 1, 1, 1])
             with c_add1:
                 novo_nome = st.text_input("Nome do Novo Atleta:", key="add_nome")
             with c_add2:
-                add_time = st.selectbox("Time:", opcoes_times, key="add_time")
+                novo_num = st.number_input("Nº da Camisa:", min_value=1, max_value=99, value=10, step=1, key="add_num")
             with c_add3:
+                add_time = st.selectbox("Time:", opcoes_times, key="add_time")
+            with c_add4:
                 add_pos = st.selectbox("Posição:", opcoes_posicoes, key="add_pos")
                 
             if st.button("➕ Adicionar Atleta", use_container_width=True):
@@ -1118,9 +1120,9 @@ elif opcao_aba == "👥 Elenco dos Times":
                     if ja_existe.any():
                         st.error(f"❌ O atleta '{nome_limpo}' já está cadastrado no elenco!")
                     else:
-                        novo_reg = pd.DataFrame([{"Jogador": nome_limpo, "Time": add_time, "Posição": add_pos}])
+                        novo_reg = pd.DataFrame([{"Jogador": nome_limpo, "Numero": int(novo_num), "Time": add_time, "Posição": add_pos}])
                         st.session_state.elenco_jogadores = pd.concat([st.session_state.elenco_jogadores, novo_reg], ignore_index=True)
-                        st.success(f"✅ Atleta {nome_limpo} adicionado com sucesso ao {add_time}!")
+                        st.success(f"✅ Atleta {nome_limpo} (#{novo_num}) adicionado com sucesso ao {add_time}!")
                         st.rerun()
                 else:
                     st.warning("⚠️ Digite um nome para cadastrar o atleta.")
@@ -1129,24 +1131,28 @@ elif opcao_aba == "👥 Elenco dos Times":
         with tab_edit:
             todos_jogadores = sorted(st.session_state.elenco_jogadores["Jogador"].tolist()) if not st.session_state.elenco_jogadores.empty else []
             if todos_jogadores:
-                c_edit1, c_edit2, c_edit3 = st.columns(3)
+                c_edit1, c_edit2, c_edit3, c_edit4 = st.columns([2, 1, 1, 1])
                 with c_edit1:
                     jogador_sel = st.selectbox("Selecione o Atleta:", todos_jogadores, key="edit_sel")
                     
                 dados_atuais = st.session_state.elenco_jogadores[st.session_state.elenco_jogadores["Jogador"] == jogador_sel].iloc[0]
+                num_atual = int(dados_atuais["Numero"]) if "Numero" in dados_atuais and pd.notna(dados_atuais["Numero"]) else 10
                 idx_time = opcoes_times.index(dados_atuais["Time"]) if dados_atuais["Time"] in opcoes_times else 0
                 idx_pos = opcoes_posicoes.index(dados_atuais["Posição"]) if dados_atuais["Posição"] in opcoes_posicoes else 0
                 
                 with c_edit2:
-                    edit_time = st.selectbox("Novo Time:", opcoes_times, index=idx_time, key="edit_time")
+                    edit_num = st.number_input("Nº Camisa:", min_value=1, max_value=99, value=num_atual, step=1, key="edit_num")
                 with c_edit3:
+                    edit_time = st.selectbox("Novo Time:", opcoes_times, index=idx_time, key="edit_time")
+                with c_edit4:
                     edit_pos = st.selectbox("Nova Posição:", opcoes_posicoes, index=idx_pos, key="edit_pos")
 
                 if st.button("💾 Salvar Alteração", use_container_width=True):
                     mask = st.session_state.elenco_jogadores["Jogador"] == jogador_sel
+                    st.session_state.elenco_jogadores.loc[mask, "Numero"] = int(edit_num)
                     st.session_state.elenco_jogadores.loc[mask, "Time"] = edit_time
                     st.session_state.elenco_jogadores.loc[mask, "Posição"] = edit_pos
-                    st.success(f"✅ {jogador_sel} atualizado com sucesso para {edit_time} ({edit_pos})!")
+                    st.success(f"✅ {jogador_sel} (#{edit_num}) atualizado com sucesso!")
                     st.rerun()
             else:
                 st.info("Nenhum atleta cadastrado para editar.")
@@ -1180,10 +1186,10 @@ elif opcao_aba == "👥 Elenco dos Times":
         st.markdown('<div class="roster-card"><div class="roster-header-vermelho"><h2>🔴 BAYERN DE MADRI</h2></div>', unsafe_allow_html=True)
         df_bayern = df_elenco[df_elenco["Time"] == "🔴 Bayern de Madri"]
         for pos in posicoes_ordem:
-            jogadores = df_bayern[df_bayern["Posição"] == pos]["Jogador"].tolist()
-            if jogadores:
+            df_pos = df_bayern[df_bayern["Posição"] == pos]
+            if not df_pos.empty:
                 st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                pills_html = "".join([f'<span class="player-pill">#{int(row["Numero"])} {row["Jogador"]}</span>' for _, row in df_pos.iterrows()])
                 st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1191,10 +1197,10 @@ elif opcao_aba == "👥 Elenco dos Times":
         st.markdown('<div class="roster-card"><div class="roster-header-azul"><h2>🔵 ATLÉTICO DE PARIS</h2></div>', unsafe_allow_html=True)
         df_atletico = df_elenco[df_elenco["Time"] == "🔵 Atlético de Paris"]
         for pos in posicoes_ordem:
-            jogadores = df_atletico[df_atletico["Posição"] == pos]["Jogador"].tolist()
-            if jogadores:
+            df_pos = df_atletico[df_atletico["Posição"] == pos]
+            if not df_pos.empty:
                 st.markdown(f'<div class="pos-section-title">{icones_pos.get(pos, "⚽")} {pos}</div>', unsafe_allow_html=True)
-                pills_html = "".join([f'<span class="player-pill">{j}</span>' for j in jogadores])
+                pills_html = "".join([f'<span class="player-pill">#{int(row["Numero"])} {row["Jogador"]}</span>' for _, row in df_pos.iterrows()])
                 st.markdown(f'<div>{pills_html}</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
