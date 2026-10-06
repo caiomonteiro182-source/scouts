@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import base64
 import requests
-import glob
 import re
 from datetime import datetime, timedelta
 
@@ -428,10 +427,10 @@ CUSTOM_CSS = """
         background-color: #0F172A;
         border: 1px dashed #10B981;
         border-radius: 8px;
-        padding: 10px 14px;
+        padding: 14px 18px;
         margin-top: 10px;
         color: #F1F5F9;
-        font-size: 13px;
+        font-size: 14px;
     }
 </style>
 """
@@ -470,7 +469,7 @@ def load_match_history():
         return pd.read_csv(f"https://docs.google.com/spreadsheets/d/{ID_PLANILHA_JOGOS}/export?format=csv")
 
 # ==========================================
-# TICKER DESLIZANTE DE JOGOS FCB (SUBSTITUIU O BRASILEIRÃO)
+# TICKER DESLIZANTE DE JOGOS FCB
 # ==========================================
 @st.cache_data(ttl=60)
 def get_fcb_match_results():
@@ -507,7 +506,6 @@ def get_fcb_match_results():
                     continue
 
         if resultados:
-            # Exibir na ordem do mais recente para o mais antigo
             return resultados[::-1]
     except Exception:
         pass
@@ -681,26 +679,6 @@ def get_base64_of_bin_file(bin_file):
         data = f.read()
     return base64.b64encode(data).decode()
 
-def get_qr_code_file_path():
-    base_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
-    
-    candidatos = [
-        os.path.join(base_dir, "IMG-20260803-WA0062.jpg"),
-        os.path.join(base_dir, "IMG-20260803-WA0062.png"),
-        os.path.join(base_dir, "IMG-20260803-WA0062.jpeg"),
-        "IMG-20260803-WA0062.jpg"
-    ]
-    
-    for caminho in candidatos:
-        if os.path.exists(caminho):
-            return caminho
-            
-    matches = glob.glob(os.path.join(base_dir, "*WA0062*")) + glob.glob(os.path.join(base_dir, "*1000517793*"))
-    if matches:
-        return matches[0]
-        
-    return None
-
 # ==========================================
 # 5. CABEÇALHO OFICIAL (COM SUPORTE RESPONSIVO)
 # ==========================================
@@ -766,7 +744,6 @@ try:
 except Exception:
     pass
 
-# Extração dinâmica do ÚLTIMO JOGO da tabela
 texto_ultimo_jogo = "Sem registros recentes"
 try:
     if not df_jogos_fcb.empty:
@@ -1081,7 +1058,6 @@ elif opcao_aba == "📅 Últimos Jogos FCB":
 elif opcao_aba == "👥 Elenco dos Times":
     st.subheader("👥 Elenco Oficial dos Times")
 
-    # 1. Inicializar o elenco no session_state caso ainda não exista
     if "elenco_jogadores" not in st.session_state:
         st.session_state.elenco_jogadores = pd.DataFrame([
             # BAYERN DE MADRI
@@ -1119,39 +1095,82 @@ elif opcao_aba == "👥 Elenco dos Times":
             {"Jogador": "Maradona", "Time": "🔵 Atlético de Paris", "Posição": "Atacantes"}
         ])
 
-    # 2. Painel expansível de Edição Rápida de Atleta
-    with st.expander("⚙️️ **Editar Time / Posição de um Jogador**", expanded=False):
-        c_edit1, c_edit2, c_edit3 = st.columns(3)
-        
-        todos_jogadores = sorted(st.session_state.elenco_jogadores["Jogador"].tolist())
-        
-        with c_edit1:
-            jogador_sel = st.selectbox("Selecione o Atleta:", todos_jogadores)
-            
-        dados_atuais = st.session_state.elenco_jogadores[st.session_state.elenco_jogadores["Jogador"] == jogador_sel].iloc[0]
+    with st.expander("⚙️ **Gerenciar Atletas (Adicionar, Editar e Excluir)**", expanded=False):
+        tab_add, tab_edit, tab_del = st.tabs(["➕ Cadastrar Atleta", "✏️ Editar Atleta", "🗑️ Excluir Atleta"])
         
         opcoes_times = ["🔴 Bayern de Madri", "🔵 Atlético de Paris"]
         opcoes_posicoes = ["Goleiros", "Zagueiros", "Laterais", "Meias", "Atacantes"]
-        
-        idx_time = opcoes_times.index(dados_atuais["Time"]) if dados_atuais["Time"] in opcoes_times else 0
-        idx_pos = opcoes_posicoes.index(dados_atuais["Posição"]) if dados_atuais["Posição"] in opcoes_posicoes else 0
-        
-        with c_edit2:
-            novo_time = st.selectbox("Novo Time:", opcoes_times, index=idx_time)
-            
-        with c_edit3:
-            nova_posicao = st.selectbox("Nova Posição:", opcoes_posicoes, index=idx_pos)
 
-        if st.button("💾 Salvar Alteração", use_container_width=True):
-            mask = st.session_state.elenco_jogadores["Jogador"] == jogador_sel
-            st.session_state.elenco_jogadores.loc[mask, "Time"] = novo_time
-            st.session_state.elenco_jogadores.loc[mask, "Posição"] = nova_posicao
-            st.success(f"✅ {jogador_sel} atualizado com sucesso para {novo_time} ({nova_posicao})!")
-            st.rerun()
+        # TAB 1: CADASTRAR JOGADOR
+        with tab_add:
+            c_add1, c_add2, c_add3 = st.columns(3)
+            with c_add1:
+                novo_nome = st.text_input("Nome do Novo Atleta:", key="add_nome")
+            with c_add2:
+                add_time = st.selectbox("Time:", opcoes_times, key="add_time")
+            with c_add3:
+                add_pos = st.selectbox("Posição:", opcoes_posicoes, key="add_pos")
+                
+            if st.button("➕ Adicionar Atleta", use_container_width=True):
+                nome_limpo = novo_nome.strip()
+                if nome_limpo:
+                    ja_existe = st.session_state.elenco_jogadores["Jogador"].str.lower() == nome_limpo.lower()
+                    if ja_existe.any():
+                        st.error(f"❌ O atleta '{nome_limpo}' já está cadastrado no elenco!")
+                    else:
+                        novo_reg = pd.DataFrame([{"Jogador": nome_limpo, "Time": add_time, "Posição": add_pos}])
+                        st.session_state.elenco_jogadores = pd.concat([st.session_state.elenco_jogadores, novo_reg], ignore_index=True)
+                        st.success(f"✅ Atleta {nome_limpo} adicionado com sucesso ao {add_time}!")
+                        st.rerun()
+                else:
+                    st.warning("⚠️ Digite um nome para cadastrar o atleta.")
+
+        # TAB 2: EDITAR JOGADOR
+        with tab_edit:
+            todos_jogadores = sorted(st.session_state.elenco_jogadores["Jogador"].tolist()) if not st.session_state.elenco_jogadores.empty else []
+            if todos_jogadores:
+                c_edit1, c_edit2, c_edit3 = st.columns(3)
+                with c_edit1:
+                    jogador_sel = st.selectbox("Selecione o Atleta:", todos_jogadores, key="edit_sel")
+                    
+                dados_atuais = st.session_state.elenco_jogadores[st.session_state.elenco_jogadores["Jogador"] == jogador_sel].iloc[0]
+                idx_time = opcoes_times.index(dados_atuais["Time"]) if dados_atuais["Time"] in opcoes_times else 0
+                idx_pos = opcoes_posicoes.index(dados_atuais["Posição"]) if dados_atuais["Posição"] in opcoes_posicoes else 0
+                
+                with c_edit2:
+                    edit_time = st.selectbox("Novo Time:", opcoes_times, index=idx_time, key="edit_time")
+                with c_edit3:
+                    edit_pos = st.selectbox("Nova Posição:", opcoes_posicoes, index=idx_pos, key="edit_pos")
+
+                if st.button("💾 Salvar Alteração", use_container_width=True):
+                    mask = st.session_state.elenco_jogadores["Jogador"] == jogador_sel
+                    st.session_state.elenco_jogadores.loc[mask, "Time"] = edit_time
+                    st.session_state.elenco_jogadores.loc[mask, "Posição"] = edit_pos
+                    st.success(f"✅ {jogador_sel} atualizado com sucesso para {edit_time} ({edit_pos})!")
+                    st.rerun()
+            else:
+                st.info("Nenhum atleta cadastrado para editar.")
+
+        # TAB 3: EXCLUIR JOGADOR
+        with tab_del:
+            todos_jogadores = sorted(st.session_state.elenco_jogadores["Jogador"].tolist()) if not st.session_state.elenco_jogadores.empty else []
+            if todos_jogadores:
+                col_del1, col_del2 = st.columns([2, 1])
+                with col_del1:
+                    jogador_del = st.selectbox("Selecione o Atleta para Remover:", todos_jogadores, key="del_sel")
+                with col_del2:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    if st.button("🗑️ Excluir Atleta", type="primary", use_container_width=True):
+                        st.session_state.elenco_jogadores = st.session_state.elenco_jogadores[
+                            st.session_state.elenco_jogadores["Jogador"] != jogador_del
+                        ].reset_index(drop=True)
+                        st.success(f"🗑️ Atleta {jogador_del} removido com sucesso!")
+                        st.rerun()
+            else:
+                st.info("Nenhum atleta cadastrado para excluir.")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # 3. Exibição dos Cards dos Elencos
     df_elenco = st.session_state.elenco_jogadores
     col_bayern, col_atletico = st.columns(2)
     icones_pos = {"Goleiros": "🧤", "Zagueiros": "🛡️", "Laterais": "🏃‍♂️", "Meias": "🧠", "Atacantes": "⚡"}
@@ -1180,7 +1199,7 @@ elif opcao_aba == "👥 Elenco dos Times":
         st.markdown("</div>", unsafe_allow_html=True)
 
 elif opcao_aba == "⚔️ Duelo de Times":
-    st.subheader("⚔️️ Comparativo: Bayern de Madri vs Atlético de Paris")
+    st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
     if "Time" in df_players.columns:
         df_players["Time"] = df_players["Time"].replace({"Vermelho": "Bayern de Madri", "Azul": "Atlético de Paris"})
         stats_times = df_players.groupby("Time")[["Gols", "Assistências", "Gols Contra", "Participações em Gols"]].sum().reset_index()
@@ -1267,38 +1286,21 @@ with m3:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# Bloco do QR Code e Chave Pix Alternativa
-col_qr, col_txt = st.columns([1, 2])
+# Bloco de Informações Pix do Clube
+st.markdown("""
+### 📱 PAGAMENTO DA MENSALIDADE VIA PIX
+* **Valor:** <span style="color:#10B981; font-weight:800; font-size:18px;">R$ 20,00</span>
+* **Vencimento:** **Até dia 11 de cada mês**
+""", unsafe_allow_html=True)
 
-qr_path = get_qr_code_file_path()
+st.markdown("""
+<div class="pix-key-box">
+    🔑 <b>Chave Pix (Telefone):</b><br>
+    <b style="color:#10B981; font-size:18px;">43 999762318</b> — <i>Juel Ferreira</i>
+</div>
+""", unsafe_allow_html=True)
 
-with col_qr:
-    if qr_path:
-        st.image(qr_path, width=160, caption="QR Code Pix FCB")
-    else:
-        github_url = "https://raw.githubusercontent.com/caiow/futebol-castelo-branco/main/IMG-20260803-WA0062.jpg"
-        try:
-            st.image(github_url, width=160, caption="QR Code Pix FCB")
-        except Exception:
-            st.warning("QR Code não encontrado.")
-
-with col_txt:
-    st.markdown("""
-    ### 📱 PAGAMENTO DA MENSALIDADE VIA PIX
-    * **Valor:** <span style="color:#10B981; font-weight:800; font-size:18px;">R$ 20,00</span>
-    * **Vencimento:** **Até dia 11 de cada mês**
-    
-    *Escaneie o QR Code ao lado pelo aplicativo do seu banco para realizar o pagamento.*
-    """, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div class="pix-key-box">
-        🔑 <b>Não consegue escannear?</b> Utilize a chave Pix abaixo:<br>
-        <b style="color:#10B981; font-size:15px;">43 9 98397065</b> — <i>Sidney Alves</i>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.code("43998397065", language="text")
+st.code("43999762318", language="text")
 
 st.markdown("<br>", unsafe_allow_html=True)
 
