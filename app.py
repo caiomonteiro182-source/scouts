@@ -352,120 +352,6 @@ CUSTOM_CSS = """
     .silver-badge { color: #38BDF8; }
     .red-badge { color: #EF4444; }
 
-    /* ESTILO DO CAMPO DE FUTEBOL TÁTICO */
-    .pitch-container {
-        position: relative;
-        width: 100%;
-        min-height: 600px;
-        background: repeating-linear-gradient(
-            0deg,
-            #1e5128,
-            #1e5128 40px,
-            #194320 40px,
-            #194320 80px
-        );
-        border: 3px solid #ffffff;
-        border-radius: 12px;
-        box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 8px 24px rgba(0,0,0,0.5);
-        display: flex;
-        flex-direction: column-reverse;
-        justify-content: space-around;
-        align-items: center;
-        padding: 25px 10px;
-        overflow: hidden;
-        margin-bottom: 20px;
-    }
-
-    .pitch-line-center {
-        position: absolute;
-        top: 50%;
-        left: 0;
-        width: 100%;
-        height: 2px;
-        background-color: rgba(255, 255, 255, 0.4);
-        pointer-events: none;
-    }
-
-    .pitch-circle-center {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 110px;
-        height: 110px;
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-    }
-
-    .pitch-box-bottom {
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        width: 180px;
-        height: 70px;
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        border-bottom: none;
-        transform: translateX(-50%);
-        pointer-events: none;
-    }
-
-    .pitch-box-top {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        width: 180px;
-        height: 70px;
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        border-top: none;
-        transform: translateX(-50%);
-        pointer-events: none;
-    }
-
-    .pitch-row {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        width: 100%;
-    }
-
-    .pitch-player {
-        background: rgba(15, 23, 42, 0.92);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        border-radius: 20px;
-        padding: 5px 12px;
-        color: #FFFFFF;
-        font-size: 12px;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        backdrop-filter: blur(4px);
-    }
-
-    .pitch-badge-bayern {
-        background: #C8102E;
-        color: #FFFFFF;
-        padding: 2px 7px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 900;
-    }
-
-    .pitch-badge-atletico {
-        background: #0284C7;
-        color: #FFFFFF;
-        padding: 2px 7px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 900;
-    }
-
     .roster-card-header {
         text-align: center;
         padding: 10px;
@@ -764,7 +650,7 @@ def get_next_saturday_weather():
             elif wcode in [51, 53, 55, 61, 63, 65, 80, 81, 82]:
                 icon = "🌧️ Chuva"
             elif wcode in [95, 96, 99]:
-                icon = "⛈️️ Tempestade"
+                icon = "⛈ Tempestade"
             else:
                 icon = "🌤️ Tempo Bom"
 
@@ -1289,8 +1175,9 @@ elif opcao_aba == "👥 Elenco dos Times":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # FUNÇÃO PARA GERAR O CAMPO DE FUTEBOL HTML
-    def renderizar_campo_tatico(df_team, badge_class):
+    # FUNÇÃO COMPLETA EM HTML NATIVO
+    def renderizar_campo_componente(df_team, is_bayern=True):
+        badge_bg = "#C8102E" if is_bayern else "#0284C7"
         posicoes_ordem = ["Goleiros", "Zagueiros", "Laterais", "Meias", "Atacantes"]
 
         rows_html = ""
@@ -1302,23 +1189,81 @@ elif opcao_aba == "👥 Elenco dos Times":
                     num = int(row["Numero"]) if pd.notna(row["Numero"]) else 0
                     nome = row["Jogador"]
                     players_html += f"""
-                    <div class="pitch-player">
-                        <span class="{badge_class}">#{num}</span>
+                    <div style="
+                        background: rgba(15, 23, 42, 0.92);
+                        border: 1px solid rgba(255, 255, 255, 0.25);
+                        border-radius: 20px;
+                        padding: 5px 12px;
+                        color: #FFFFFF;
+                        font-size: 12px;
+                        font-weight: 700;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+                        backdrop-filter: blur(4px);
+                    ">
+                        <span style="
+                            background: {badge_bg};
+                            color: #FFFFFF;
+                            padding: 2px 7px;
+                            border-radius: 12px;
+                            font-size: 11px;
+                            font-weight: 900;
+                        ">#{num}</span>
                         <span>{nome}</span>
                     </div>
                     """
-                rows_html += f'<div class="pitch-row">{players_html}</div>'
+                rows_html += f'<div style="position: relative; z-index: 2; display: flex; justify-content: center; align-items: center; gap: 10px; flex-wrap: wrap; width: 100%;">{players_html}</div>'
 
-        field_html = f"""
-        <div class="pitch-container">
-            <div class="pitch-line-center"></div>
-            <div class="pitch-circle-center"></div>
-            <div class="pitch-box-bottom"></div>
-            <div class="pitch-box-top"></div>
-            {rows_html}
-        </div>
+        full_html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap');
+                body {{
+                    margin: 0;
+                    padding: 0;
+                    font-family: 'Montserrat', sans-serif;
+                    background-color: transparent;
+                }}
+                .pitch {{
+                    position: relative;
+                    width: 100%;
+                    height: 580px;
+                    background: repeating-linear-gradient(
+                        0deg,
+                        #1e5128,
+                        #1e5128 40px,
+                        #194320 40px,
+                        #194320 80px
+                    );
+                    border: 3px solid #ffffff;
+                    border-radius: 12px;
+                    box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+                    display: flex;
+                    flex-direction: column-reverse;
+                    justify-content: space-around;
+                    align-items: center;
+                    padding: 20px 10px;
+                    box-sizing: border-box;
+                    overflow: hidden;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="pitch">
+                <div style="position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background-color: rgba(255, 255, 255, 0.4); pointer-events: none;"></div>
+                <div style="position: absolute; top: 50%; left: 50%; width: 110px; height: 110px; border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none;"></div>
+                <div style="position: absolute; bottom: 0; left: 50%; width: 180px; height: 70px; border: 2px solid rgba(255, 255, 255, 0.4); border-bottom: none; transform: translateX(-50%); pointer-events: none;"></div>
+                <div style="position: absolute; top: 0; left: 50%; width: 180px; height: 70px; border: 2px solid rgba(255, 255, 255, 0.4); border-top: none; transform: translateX(-50%); pointer-events: none;"></div>
+                {rows_html}
+            </div>
+        </body>
+        </html>
         """
-        return field_html
+        return full_html
 
     df_elenco = st.session_state.elenco_jogadores
     col_bayern, col_atletico = st.columns(2)
@@ -1326,14 +1271,14 @@ elif opcao_aba == "👥 Elenco dos Times":
     with col_bayern:
         st.markdown('<div class="roster-card-header" style="background:#3f0a14; border:2px solid #C8102E; color:#EF4444;">🔴 BAYERN DE MADRI</div>', unsafe_allow_html=True)
         df_bayern = df_elenco[df_elenco["Time"] == "🔴 Bayern de Madri"]
-        html_bayern = renderizar_campo_tatico(df_bayern, "pitch-badge-bayern")
-        st.markdown(html_bayern, unsafe_allow_html=True)
+        html_bayern = renderizar_campo_componente(df_bayern, is_bayern=True)
+        st.components.v1.html(html_bayern, height=600)
 
     with col_atletico:
         st.markdown('<div class="roster-card-header" style="background:#0A1E3F; border:2px solid #38BDF8; color:#38BDF8;">🔵 ATLÉTICO DE PARIS</div>', unsafe_allow_html=True)
         df_atletico = df_elenco[df_elenco["Time"] == "🔵 Atlético de Paris"]
-        html_atletico = renderizar_campo_tatico(df_atletico, "pitch-badge-atletico")
-        st.markdown(html_atletico, unsafe_allow_html=True)
+        html_atletico = renderizar_campo_componente(df_atletico, is_bayern=False)
+        st.components.v1.html(html_atletico, height=600)
 
 elif opcao_aba == "⚔️ Duelo de Times":
     st.subheader("⚔️ Comparativo: Bayern de Madri vs Atlético de Paris")
